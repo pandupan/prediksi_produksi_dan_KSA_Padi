@@ -79,7 +79,7 @@ const Header = () => {
             <Link href="#projects">Visualisasi</Link>
           </li>
           <li className="p-2 hover:text-blue-500 hover:border-b-2 hover:border-blue-500 transition-all duration-200">
-            <Link href="#about">Coba Sekarang</Link>
+            <Link href="/prediction">Coba Sekarang</Link>
           </li>
         </ul>
 
