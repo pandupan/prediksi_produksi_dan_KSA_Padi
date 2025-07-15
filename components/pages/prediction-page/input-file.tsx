@@ -15,11 +15,19 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button"; // Import Button component
 import { UploadCloud, File as FileIcon, Loader2, AlertCircle, BarChart3, LineChart as LineChartIcon } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, TooltipProps } from 'recharts';
-import { ValueType, NameType } from 'recharts/types/component/DefaultTooltipContent';
+import { ValueType, NameType, Payload } from 'recharts/types/component/DefaultTooltipContent'; // Import Payload
 
 // --- Interfaces ---
 interface ExcelData { [key: string]: any; }
 interface AggregatedData { kecamatan: string; [month: string]: any; }
+
+// Definisikan props secara eksplisit
+interface MyCustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+}
+
 
 // --- Helper Functions ---
 const formatKsaDate = (header: string, short = false): string => {
@@ -87,16 +95,19 @@ const yAxisValueMap: { [key: string]: string } = {
 };
 
 // --- Komponen Tooltip Kustom untuk Chart ---
-const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
+const CustomTooltip = ({ active, payload, label }: MyCustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <Card className="p-2 text-sm shadow-lg">
-        <CardHeader className="p-1 font-bold border-b mb-1">{label}</CardHeader>
+        <CardHeader className="p-1 font-bold border-b mb-1">
+          {typeof label === 'string' || typeof label === 'number' ? label : String(label)} {/* Handle label type */}
+        </CardHeader>
         <CardContent className="p-1">
-          {payload.map((pld: any) => ( // Fix: Added type annotation for pld
-            <div key={pld.dataKey} className="flex items-center">
-              <div style={{ backgroundColor: pld.color }} className="w-2.5 h-2.5 rounded-full mr-2 shrink-0"></div>
-              <span className="flex-1 truncate">{pld.dataKey}: </span>
+          {/* Specify the type for 'pld' as Payload<ValueType, NameType> */}
+          {payload.map((pld: Payload<ValueType, NameType>) => (
+            <div key={pld.dataKey as React.Key} className="flex items-center">
+              <div style={{ backgroundColor: pld.color as string }} className="w-2.5 h-2.5 rounded-full mr-2 shrink-0"></div>
+              <span className="flex-1 truncate">{pld.dataKey as string}: </span> {/* Cast dataKey to string */}
               {/* Convert numerical value to descriptive string */}
               <span className="font-semibold ml-2">{yAxisValueMap[String(pld.value)] || pld.value}</span>
             </div>
