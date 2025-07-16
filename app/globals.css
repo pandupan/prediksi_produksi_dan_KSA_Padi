@@ -134,3 +134,13 @@
     background-position:75%; 
   }
 }
+
+.kecamatan-label {
+  font-weight: bold;
+  font-size: 12px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
