@@ -142,16 +142,16 @@ const formatKsaDate = (header: string, short = false): string => {
 };
 
 const kecamatanMap: { [key: string]: string } = {
-  "327809": "Bungursari",
-  "327806": "Cibeureum",
-  "327801": "Cihideung",
-  "327802": "Cipedes",
-  "327804": "Indihiang",
-  "327805": "Kawalu",
-  "327808": "Mangkubumi",
-  "327810": "Purbaratu",
-  "327807": "Tamansari",
-  "327803": "Tawang",
+  "3278071": "Bungursari",
+  "3278030": "Cibeureum",
+  "3278050": "Cihideung",
+  "3278080": "Cipedes",
+  "3278070": "Indihiang",
+  "3278010": "Kawalu",
+  "3278060": "Mangkubumi",
+  "3278031": "Purbaratu",
+  "3278020": "Tamansari",
+  "3278040": "Tawang",
 };
 
 const getModus = (arr: any[]): any => {
@@ -216,7 +216,7 @@ const getPhaseColor = (phase: number | null): string => {
     case 3.2:
       return "#B5E8B8";
     case 3.3:
-      return "#DAF5DB";
+      return "#BBDA96";
     case 4:
       return "#FED16A";
     case 13:
@@ -227,7 +227,7 @@ const getPhaseColor = (phase: number | null): string => {
       return "#BDBDBD";
     default:
       return "#78909C";
-  }
+  }
 };
 
 const CustomTooltip = ({ active, payload, label }: MyCustomTooltipProps) => {
@@ -395,7 +395,7 @@ const InputFile = () => {
     const groupedByKecamatan: { [key: string]: ExcelData[] } = {};
     rows.forEach((row) => {
       const idSegmen = String(row[idSegmenKey] || "");
-      const kodeKecamatan = idSegmen.substring(0, 6);
+      const kodeKecamatan = idSegmen.substring(0, 7);
       const namaKecamatan = kecamatanMap[kodeKecamatan];
       if (namaKecamatan) {
         if (!groupedByKecamatan[namaKecamatan])

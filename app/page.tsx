@@ -1,13 +1,18 @@
-import Hero from '@/components/pages/landing-page/Hero'
+import AboutKsa from "@/components/pages/landing-page/AboutKsa";
+import AnalysisDashboard from "@/components/pages/visual-page/AnalysisDashboard";
+import Benefits from "@/components/pages/landing-page/Benefits";
+import Hero from "@/components/pages/landing-page/Hero";
 
 export default function Home() {
   return (
-      <>      
-            <Hero 
-                  heading='Menyediakan hasil dari KSA untuk perhitungan akurat dan prediksi hasil panen padi, mendukung petani dan pengambilan keputusan yang lebih baik di Tasikmalaya.'
-                  message='"Mewujudkan Analytic Data Pangan Presisi & Kredibel bersama Lumbung Nusa"'
-            />
-      </>
-  )
+    <main>
+      <Hero
+        heading="Menyediakan data hasil KSA untuk perhitungan prediksi hasil panen padi secara akurat."
+        message='"Menyediakan data pertanian yang lebih baik untuk kesejahteraan petani"'
+      />
+      <AboutKsa />
+      <Benefits />
+      <AnalysisDashboard/>
+    </main>
+  );
 }
-

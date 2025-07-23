@@ -1,0 +1,93 @@
+"use client";
+
+import React from 'react';
+import Image from 'next/image';
+import { motion, type Variants } from 'framer-motion';
+import { FiDatabase, FiMap, FiBarChart, FiTrendingUp } from 'react-icons/fi';
+
+const usesData = [
+  {
+    icon: <FiDatabase size={28} className="text-green-700" />,
+    title: "Data Obyektif",
+    description: "Mengurangi subjektivitas dalam pengumpulan data luas panen padi.",
+  },
+  {
+    icon: <FiMap size={28} className="text-green-700" />,
+    title: "Pemetaan Spasial",
+    description: "Menyediakan informasi spasial tentang fase tumbuh padi.",
+  },
+  {
+    icon: <FiBarChart size={28} className="text-green-700" />,
+    title: "Informasi Cepat",
+    description: "Menghasilkan data luas panen dengan lebih cepat (real-time).",
+  },
+  {
+    icon: <FiTrendingUp size={28} className="text-green-700" />,
+    title: "Modernisasi Statistik",
+    description: "Menggantikan metode konvensional dengan teknologi modern.",
+  },
+];
+
+const Benefits = () => {
+  const sectionVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2, delayChildren: 0.2 }
+    }
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+
+  return (
+    <section id="ksa-uses" className="py-20 bg-gray-50">
+      <div className="container mx-auto px-6 max-w-6xl">
+        <motion.div
+          className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.2 }}
+          variants={sectionVariants}
+        >
+          {/* Gambar Utama */}
+          <motion.div className="lg:w-2/5 w-full" variants={itemVariants}>
+            <div className="relative h-96 lg:h-[500px] w-full rounded-lg shadow-2xl overflow-hidden">
+              <Image
+                src="https://freeimghost.net/images/2025/07/23/Screenshot-2025-07-23-110459.png"
+                alt="Kegunaan KSA"
+                layout="fill"
+                objectFit="cover"
+              />
+            </div>
+          </motion.div>
+
+          {/* List Kegunaan */}
+          <motion.div className="lg:w-3/5" variants={itemVariants}>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-center lg:text-left">
+              Kegunaan KSA
+            </h2>
+            <div className="w-24 h-1 bg-green-700 mx-auto lg:mx-0 mb-8" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {usesData.map((use, index) => (
+                <div key={index} className="flex items-start gap-4 p-4 rounded-lg hover:bg-white hover:shadow-md transition-all">
+                  <div className="flex-shrink-0 bg-green-100 p-3 rounded-full">
+                    {use.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-1">{use.title}</h3>
+                    <p className="text-gray-600">{use.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+export default Benefits;

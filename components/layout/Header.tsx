@@ -60,7 +60,7 @@ const Header = () => {
           style={{ color: `${textColor}` }}
         >
           <h2 className="font-semibold italic">
-            &quot;Wujudkan Inovasi Ketahan Pangan Bangsa!&quot;
+            &quot;Wujudkan Inovasi Ketahanan Pangan Bangsa!&quot;
           </h2>
         </div>
 
@@ -70,13 +70,13 @@ const Header = () => {
           className="hidden sm:flex font-semibold space-x-4"
         >
           <li className="p-2 hover:text-blue-500 hover:border-b-2 hover:border-blue-500 transition-all duration-200">
-            <Link href="#projects">Dashboard</Link>
+            <Link href="/">Home</Link>
           </li>
           <li className="p-2 hover:text-blue-500 hover:border-b-2 hover:border-blue-500 transition-all duration-200">
-            <Link href="#about">Deskripsi KSA</Link>
+            <Link href="/visualisasi-ksa">Visualisasi KSA</Link>
           </li>
           <li className="p-2 hover:text-blue-500 hover:border-b-2 hover:border-blue-500 transition-all duration-200">
-            <Link href="#projects">Visualisasi</Link>
+            <Link href="#projects">Komparasi</Link>
           </li>
           <li className="p-2 hover:text-blue-500 hover:border-b-2 hover:border-blue-500 transition-all duration-200">
             <Link href="/prediction">Coba Sekarang</Link>
@@ -100,13 +100,13 @@ const Header = () => {
         >
           <ul className="space-y-8 text-center text-2xl font-bold">
             <li onClick={handleNav}>
-              <Link href="#projects">Dashboard</Link>
+              <Link href="#projects">Home</Link>
             </li>
             <li onClick={handleNav}>
-              <Link href="#about">Deskripsi KSA</Link>
+              <Link href="#about">Visualisasi KSA</Link>
             </li>
             <li onClick={handleNav}>
-              <Link href="#projects">Visualisasi</Link>
+              <Link href="#projects">Komparasi</Link>
             </li>
             <li onClick={handleNav}>
               <Link href="#about">Coba Sekarang</Link>
