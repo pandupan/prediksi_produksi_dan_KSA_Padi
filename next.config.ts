@@ -1,8 +1,14 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
-    domains: ["freeimghost.net"],
+    remotePatterns: [
+      {
+        protocol: 'https', 
+        hostname: 'freeimghost.net',
+        port: '',
+        pathname: '/**', 
+      },
+    ],
   },
 };
 

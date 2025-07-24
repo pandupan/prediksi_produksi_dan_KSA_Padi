@@ -938,7 +938,7 @@ const InputFile = () => {
                     </div>
                   ))}
                   <div className="p-2 border-t">
-                    <Button
+                    <Button 
                       onClick={handleConfirmSelectionPrediksi}
                       className="w-full"
                     >
