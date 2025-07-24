@@ -35,7 +35,7 @@ const AboutKsa = () => {
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: false, amount: 0.3 }} // Animasi berulang
+        viewport={{ once: false, amount: 0.3 }} 
       >
         <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
           {/* Kolom Teks */}

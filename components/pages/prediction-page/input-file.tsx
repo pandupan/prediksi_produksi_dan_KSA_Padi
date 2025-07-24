@@ -85,7 +85,7 @@ interface MyCustomTooltipProps {
 }
 
 // --- Dynamic Import untuk Peta (Client-Side Only) ---
-const TasikMap = dynamic(() => import("@/components/TasikMap"), {
+const TasikMap = dynamic(() => import("@/components/KecamatanMap"), {
   ssr: false,
   loading: () => (
     <div className="h-[500px] w-full flex items-center justify-center bg-muted rounded-lg">
