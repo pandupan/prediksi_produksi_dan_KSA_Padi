@@ -1,20 +1,17 @@
-// C:\Project\ksa-produksi-padi\components\TasikCityMap.tsx
- 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 'use client';
 import React, { useMemo } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { LatLngExpression } from 'leaflet';
+import { LatLngExpression } from 'leaflet'; 
 import { GeoJsonObject } from 'geojson';
-
-// Import helper functions dari file utils.tsx
+ 
 import { yAxisValueMap, formatKsaDate } from "@/lib/utils";
 
 interface TasikCityMapProps {
     geoJsonKecamatan: any;
-    dataFaseKota: number | null; // Sudah bersih dari 13/4.5
+    dataFaseKota: number | null; 
     phaseColorMapping: (phase: number | null) => string;
     selectedMonth: string;
 }
@@ -32,7 +29,7 @@ const TasikCityMap: React.FC<TasikCityMapProps> = ({
             return null;
         }
 
-        const color = phaseColorMapping(dataFaseKota); // dataFaseKota sudah bersih
+        const color = phaseColorMapping(dataFaseKota); 
 
         const processedFeatures = geoJsonKecamatan.features.map((kecamatanFeature: any) => {
             return {

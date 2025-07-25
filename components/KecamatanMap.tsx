@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 'use client';
-
+ 
 import React, { useMemo } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -17,7 +17,7 @@ import { yAxisValueMap, getPhaseColor, formatKsaDate } from "@/lib/utils"; // Pa
 interface KecamatanMapProps {
     geoJsonKecamatan: any;
     geoJsonSawah: any;
-    dataFase: any[]; // Ini adalah data modus per kecamatan
+    dataFase: any[]; 
     selectedMonth: string;
     phaseColorMapping: (phase: number | null) => string;
 }
