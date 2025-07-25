@@ -73,13 +73,13 @@ const Header = () => {
         >
           {/* Menggunakan ID section untuk navigasi di halaman utama */}
           <li className="p-2 hover:text-green-600 transition-colors duration-200">
-            <Link href="/#about-ksa">About KSA</Link>
+            <Link href="/#about-ksa">Beranda</Link>
           </li>
           <li className="p-2 hover:text-green-600 transition-colors duration-200">
-            <Link href="/#visualisasi-interaktif">Visualisasi KSA</Link>
+            <Link href="/#visualisasi-interaktif">Visualisasi</Link>
           </li>
           <li className="p-2 hover:text-green-600 transition-colors duration-200">
-            <Link href="/compare-ksa">Komparasi KSA</Link>
+            <Link href="/compare-ksa">Komparasi</Link>
           </li>
           <li className="p-2">
             <Link href="/prediction">
@@ -107,13 +107,13 @@ const Header = () => {
         >
           <ul className="space-y-8 text-center text-2xl font-bold">
             <li onClick={handleNav}>
-              <Link href="/#about-ksa">About KSA</Link>
+              <Link href="/#about-ksa">Beranda</Link>
             </li>
             <li onClick={handleNav}>
-              <Link href="/#visualisasi-interaktif">Visualiasi KSA</Link>
+              <Link href="/#visualisasi-interaktif">Visualiasi</Link>
             </li>
             <li onClick={handleNav}>
-              <Link href="/compare-ksa">Komparasi KSA</Link>
+              <Link href="/compare-ksa">Komparasi</Link>
             </li>
             <li onClick={handleNav}>
               <Link href="/prediction">Coba Sekarang</Link>

@@ -122,8 +122,8 @@
 }
 
 .hero-img {
-  background-image: url("https://freeimghost.net/images/2025/07/06/hero-section.png");
-  background-position: 90% center; /* Mengambil bagian ujung kanan gambar */
+  background-image: url("https://freeimghost.net/images/2025/07/25/hero-section.jpg");
+  background-position: 90% center; 
   background-repeat: no-repeat;
   background-size: cover;
 }
