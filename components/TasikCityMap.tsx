@@ -1,16 +1,20 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// C:\Project\ksa-produksi-padi\components\TasikCityMap.tsx
+ 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-'use client'; 
+'use client';
 import React, { useMemo } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css'; 
+import 'leaflet/dist/leaflet.css';
 import { LatLngExpression } from 'leaflet';
 import { GeoJsonObject } from 'geojson';
 
+// Import helper functions dari file utils.tsx
+import { yAxisValueMap, formatKsaDate } from "@/lib/utils";
+
 interface TasikCityMapProps {
     geoJsonKecamatan: any;
-    dataFaseKota: number | null;
+    dataFaseKota: number | null; // Sudah bersih dari 13/4.5
     phaseColorMapping: (phase: number | null) => string;
     selectedMonth: string;
 }
@@ -23,13 +27,12 @@ const TasikCityMap: React.FC<TasikCityMapProps> = ({
 }) => {
     const center: LatLngExpression = [-7.35, 108.22];
 
-    // Proses GeoJSON Kecamatan untuk diwarnai dengan fase dominan kota
     const processedKecamatanGeoJSON = useMemo(() => {
         if (!geoJsonKecamatan || !geoJsonKecamatan.features) {
             return null;
         }
 
-        const color = phaseColorMapping(dataFaseKota);
+        const color = phaseColorMapping(dataFaseKota); // dataFaseKota sudah bersih
 
         const processedFeatures = geoJsonKecamatan.features.map((kecamatanFeature: any) => {
             return {
@@ -45,7 +48,6 @@ const TasikCityMap: React.FC<TasikCityMapProps> = ({
         return { type: 'FeatureCollection', features: processedFeatures } as GeoJsonObject;
     }, [geoJsonKecamatan, dataFaseKota, phaseColorMapping]);
 
-    // Style untuk lapisan GeoJSON Kecamatan (batas kota)
     const styleKecamatan = (feature: any) => {
         const fillColor = feature.properties.color || '#BDBDBD';
         return {
@@ -60,29 +62,7 @@ const TasikCityMap: React.FC<TasikCityMapProps> = ({
         layer.bindTooltip(`Kecamatan: ${feature.properties.KECAMATAN}`, { permanent: true, direction: 'center', className: 'kecamatan-label' });
 
         const faseLabel = yAxisValueMap[String(feature.properties.fase)] || 'N/A';
-        layer.bindPopup(`<h3>Fase Dominan Kota ${formatKsaDate(selectedMonth)}:</h3><p><strong>${faseLabel}</strong></p>`);
-    };
-
-    // Pastikan yAxisValueMap dan formatKsaDate konsisten dengan AnalysisDashboard.tsx
-    const yAxisValueMap: { [key: string]: string } = { '1': 'Vegetatif 1', '2': 'Vegetatif 2', '3.1': 'Generatif 1', '3.2': 'Generatif 2', '3.3': 'Generatif 3', '4': 'Panen', '5': 'Persiapan Lahan', '13': 'Pasca Panen', '6': 'Puso', '8': 'Bukan Lahan Pertanian', '4.5': 'Pasca Panen' };
-
-    const formatKsaDate = (header: string, short = false): string => {
-        const headerStr = String(header);
-        if (!/^\d{3,}$/.test(headerStr) && isNaN(parseInt(headerStr))) return header;
-        try {
-            const year = parseInt(headerStr.slice(-2));
-            const month = parseInt(headerStr.slice(0, -2));
-            const fullYear = 2000 + year;
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-            const longMonthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-            if (month >= 1 && month <= 12)
-                return short
-                    ? `${monthNames[month - 1]} '${year}`
-                    : `${longMonthNames[month - 1]} ${fullYear}`;
-            return header;
-        } catch (error) {
-            return header;
-        }
+        layer.bindPopup(`<h3>Fase Dominan Kota (${formatKsaDate(selectedMonth)}):</h3><p><strong>${faseLabel}</strong></p>`);
     };
 
     return (

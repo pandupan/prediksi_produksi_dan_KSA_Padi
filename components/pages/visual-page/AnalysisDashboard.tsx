@@ -1,3 +1,4 @@
+// AnalysisDashboard.tsx
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -8,65 +9,42 @@ import React, { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import * as XLSX from "xlsx";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
+  Card, CardHeader, CardTitle, CardDescription, CardContent,
 } from "@/components/ui/card";
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
+  Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
 } from "@/components/ui/table";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
-  Loader2,
-  AlertCircle,
-  BarChart3,
-  LineChart as LineChartIcon,
-  MapPin,
-  File as FileIcon,
-  Info,
-  Globe,
+  Loader2, AlertCircle, BarChart3, LineChart as LineChartIcon,
+  MapPin, File as FileIcon, Info, Globe,
 } from "lucide-react";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import {
-  ValueType,
-  NameType,
-  Payload,
+  ValueType, NameType, Payload,
 } from "recharts/types/component/DefaultTooltipContent";
 
 // --- Import Data GeoJSON ---
 import { tasikmalayaGeoJson } from "@/lib/tasikmalaya-geojson";
 import { sawahGeoJson } from "@/lib/bpn-sawah-geojson";
 
-// --- Pastikan KEDUA KOMPONEN PETA diimpor secara dinamis dengan ssr: false ---
+// --- Import semua helper functions dan interfaces dari file utils.tsx ---
+import {
+  formatKsaDate, kecamatanMap, getModus, validateStructure,
+  getPhaseColor, phaseOrder, yAxisValueMap, yAxisTicks, getNextMonthKey,
+  generatePredictions, CustomTooltip,
+  ExcelData, AggregatedData, PredictedData
+} from "@/lib/utils";
 
-// Komponen Peta per Sawah/Kecamatan
-// Menggunakan nama alias 'KecamatanMapDynamic' untuk menghindari konflik nama.
+// --- Pastikan KEDUA KOMPONEN PETA diimpor secara dinamis dengan ssr: false ---
 const KecamatanMapDynamic = dynamic(() => import("@/components/KecamatanMap"), {
   ssr: false,
   loading: () => (
@@ -77,7 +55,6 @@ const KecamatanMapDynamic = dynamic(() => import("@/components/KecamatanMap"), {
   ),
 });
 
-// Komponen Peta Agregasi Kota
 const TasikCityMap = dynamic(() => import("@/components/TasikCityMap"), {
   ssr: false,
   loading: () => (
@@ -87,174 +64,6 @@ const TasikCityMap = dynamic(() => import("@/components/TasikCityMap"), {
     </div>
   ),
 });
-
-
-// --- Interfaces & Types ---
-interface ExcelData {
-  [key: string]: any;
-}
-interface AggregatedData {
-  kecamatan: string;
-  [month: string]: any;
-}
-interface PredictedData {
-  kecamatan: string;
-  [month: string]: any;
-}
-
-// --- Helper Functions (di luar komponen untuk bisa diakses oleh generatePredictions) ---
-const formatKsaDate = (header: string, short = false): string => {
-  const headerStr = String(header);
-  if (!/^\d{3,}$/.test(headerStr) && isNaN(parseInt(headerStr))) return header;
-  try {
-    const year = parseInt(headerStr.slice(-2));
-    const month = parseInt(headerStr.slice(0, -2));
-    const fullYear = 2000 + year;
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "Mei",
-      "Jun",
-      "Jul",
-      "Agu",
-      "Sep",
-      "Okt",
-      "Nov",
-      "Des",
-    ];
-    const longMonthNames = [
-      "Januari",
-      "Februari",
-      "Maret",
-      "April",
-      "Mei",
-      "Juni",
-      "Juli",
-      "Agustus",
-      "September",
-      "Oktober",
-      "November",
-      "Desember",
-    ];
-    if (month >= 1 && month <= 12)
-      return short
-        ? `${monthNames[month - 1]} '${year}`
-        : `${longMonthNames[month - 1]} ${fullYear}`;
-    return header;
-  } catch (error) {
-    return header;
-  }
-};
-const kecamatanMap: { [key: string]: string } = {
-  "3278071": "Bungursari",
-  "3278030": "Cibeureum",
-  "3278050": "Cihideung",
-  "3278080": "Cipedes",
-  "3278070": "Indihiang",
-  "3278010": "Kawalu",
-  "3278060": "Mangkubumi",
-  "3278031": "Purbaratu",
-  "3278020": "Tamansari",
-  "3278040": "Tawang",
-};
-const getModus = (arr: any[]): any => {
-  if (!arr.length) return null;
-  const freqMap: { [key: string]: number } = {};
-  let maxFreq = 0;
-  let modus: any = null;
-  arr.forEach((item) => {
-    const key = String(item);
-    freqMap[key] = (freqMap[key] || 0) + 1;
-    if (freqMap[key] > maxFreq) {
-      maxFreq = freqMap[key];
-      modus = item;
-    }
-  });
-  return modus;
-};
-const validateStructure = (headers: string[]): string | null => {
-  const lowercasedHeaders = headers.map((h) => h.toLowerCase().trim());
-  if (!lowercasedHeaders.includes("id segmen"))
-    return "Struktur file tidak sesuai. Kolom 'id segmen' tidak ditemukan.";
-  if (!lowercasedHeaders.includes("subsegmen"))
-    return "Struktur file tidak sesuai. Kolom 'subsegmen' tidak ditemukan.";
-  return null;
-};
-const getPhaseColor = (phase: number | null): string => {
-  if (phase === null) return "#9E9E9E";
-  switch (phase) {
-    case 5:
-      return "#A16D28";
-    case 1:
-      return "#3E5F44";
-    case 2:
-      return "#5E936C";
-    case 3.1:
-      return "#93DA97";
-    case 3.2:
-      return "#B5E8B8";
-    case 3.3:
-      return "#DAF5DB";
-    case 4:
-      return "#FED16A";
-    case 13: // 13 biasanya Pasca Panen
-      return "#665123";
-    case 4.5: // Tambahkan 4.5 untuk Pasca Panen jika ada di data
-      return "#FED16A"; // Bisa warna yang sama dengan panen atau berbeda
-    case 6:
-      return "#101010"; // Puso
-    case 8:
-      return "#BDBDBD"; // Bukan Sawah
-    default:
-      return "#78909C"; // Warna default untuk fase yang tidak dikenal
-  }
-};
-
-const phaseOrder = [4.5, 4, 3.3, 3.2, 3.1, 2, 1, 5, 6, 8];
-const yAxisValueMap: { [key: string]: string } = {
-  "1": "Vegetatif 1",
-  "2": "Vegetatif 2",
-  "3.1": "Generatif 1",
-  "3.2": "Generatif 2",
-  "3.3": "Generatif 3",
-  "4": "Panen",
-  "5": "Persiapan Lahan",
-  "6": "Puso",
-  "8": "Bukan Sawah",
-  "4.5": "Pasca Panen",
-};
-const yAxisTicks = phaseOrder.map(String);
-
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <Card className="p-2 text-sm shadow-lg">
-        <CardHeader className="p-1 font-bold border-b mb-1">
-          {typeof label === "string" || typeof label === "number"
-            ? formatKsaDate(String(label))
-            : String(label)}
-        </CardHeader>
-        <CardContent className="p-1">
-          {payload.map((pld: Payload<ValueType, NameType>) => (
-            <div key={pld.dataKey as React.Key} className="flex items-center">
-              <div
-                style={{ backgroundColor: pld.color as string }}
-                className="w-2.5 h-2.5 rounded-full mr-2 shrink-0"
-              ></div>
-              <span className="flex-1 truncate">{pld.dataKey as string}: </span>
-              <span className="font-semibold ml-2">
-                {yAxisValueMap[String(pld.value)] || pld.value}
-              </span>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    );
-  }
-  return null;
-};
 
 
 const AnalysisDashboard = () => {
@@ -289,63 +98,6 @@ const AnalysisDashboard = () => {
     setConfirmedSelectedKecamatanPrediksi,
   ] = useState<string[]>([]);
   const [isSelectOpenPrediksi, setIsSelectOpenPrediksi] = useState(false);
-
-  // Helper function moved outside to be accessible by generatePredictions
-  const getNextMonthKey = (monthKey: string): string => {
-    const month = parseInt(monthKey.slice(0, -2));
-    const year = parseInt(monthKey.slice(-2));
-    if (month === 12) return `1${year + 1}`;
-    return `${month + 1}${year}`;
-  };
-
-  const generatePredictions = (
-    aggData: AggregatedData[],
-    aggCols: string[]
-  ): { predictions: PredictedData[]; columns: string[] } => {
-    const faseOrder = [5.0, 1.0, 2.0, 3.1, 3.2, 3.3, 4.0, 4.5];
-    const lastMonthKey = aggCols[aggCols.length - 1];
-    const predictions: PredictedData[] = [];
-    const newColumns: string[] = ["kecamatan"]; 
-
-    let currentMonthKey = lastMonthKey;
-    if (!currentMonthKey) return { predictions: [], columns: [] };
-
-    // Loop untuk mengisi newColumns dengan 12 bulan ke depan
-    for (let i = 0; i < 12; i++) {
-      currentMonthKey = getNextMonthKey(currentMonthKey);
-      newColumns.push(currentMonthKey);
-    }
-
-    aggData.forEach((row) => {
-      const newRow: PredictedData = { kecamatan: row.kecamatan };
-      let lastPhase = row[lastMonthKey];
-      if (typeof lastPhase === 'string') {
-        lastPhase = parseFloat(lastPhase);
-      } else if (lastPhase === undefined) {
-        lastPhase = null;
-      }
-
-      let currentIndex = lastPhase !== null ? faseOrder.indexOf(lastPhase) : -1;
-
-      if (currentIndex === -1) {
-          currentIndex = 0;
-          lastPhase = faseOrder[currentIndex];
-      }
-
-      newColumns.slice(1).forEach((monthKey) => {
-        const nextPhase =
-          currentIndex === faseOrder.length - 1
-            ? faseOrder[0]
-            : faseOrder[currentIndex + 1];
-
-        newRow[monthKey] = nextPhase;
-        lastPhase = nextPhase;
-        currentIndex = faseOrder.indexOf(lastPhase);
-      });
-      predictions.push(newRow);
-    });
-    return { predictions, columns: newColumns };
-  };
 
   const processAggregation = (rows: ExcelData[], originalColumns: string[]) => {
     const idSegmenKey = originalColumns.find(
@@ -382,9 +134,16 @@ const AnalysisDashboard = () => {
       const kecamatanData = groupedByKecamatan[namaKecamatan];
       const newRow: AggregatedData = { kecamatan: namaKecamatan };
       monthColumns.forEach((month) => {
-        newRow[month] = getModus(
-          kecamatanData.map((d) => d[month]).filter((v) => v != null)
-        );
+        // PERBAIKAN: Konversi fase 13 atau 4.5 menjadi 5.0 di sini
+        const cleanedPhases = kecamatanData.map((d: ExcelData) => {
+            let phaseValue = d[month];
+            if (typeof phaseValue === 'string') phaseValue = parseFloat(phaseValue);
+            // Konversi 13 atau 4.5 menjadi 5.0 (Persiapan Lahan)
+            if (phaseValue === 13 || phaseValue === 4.5) return 5.0;
+            return phaseValue;
+        }).filter((v: any) => v != null); // Filter null/undefined sebelum mencari modus
+        
+        newRow[month] = getModus(cleanedPhases);
       });
       result.push(newRow);
     }
@@ -393,7 +152,6 @@ const AnalysisDashboard = () => {
     const aggCols = ["kecamatan", ...monthColumns];
     setAggregatedColumns(aggCols);
     
-    // Pastikan aggCols memiliki setidaknya satu bulan sebelum memanggil generatePredictions
     if (aggCols.length > 1) { 
       const { predictions: preds, columns: predCols } = generatePredictions(
         result,
@@ -403,7 +161,13 @@ const AnalysisDashboard = () => {
       setPredictionColumns(predCols);
     } else {
         setPredictedData([]);
-        setPredictionColumns(["kecamatan"]);
+        const futureMonths = [];
+        let currentMonthKeyForPrediction = monthColumns.length > 0 ? monthColumns[monthColumns.length - 1] : "124"; // Fallback
+        for(let i = 0; i < 12; i++) {
+            currentMonthKeyForPrediction = getNextMonthKey(currentMonthKeyForPrediction);
+            futureMonths.push(currentMonthKeyForPrediction);
+        }
+        setPredictionColumns(["kecamatan", ...futureMonths]);
     }
 
     const kecamatanList = result.map((d) => d.kecamatan);
@@ -458,6 +222,7 @@ const AnalysisDashboard = () => {
     };
     fetchData();
   }, []);
+
   useEffect(() => {
     if (allKecamatan.length > 0) {
       const defaultSelection = ["Mangkubumi", "Indihiang", "Cibeureum"];
@@ -474,18 +239,56 @@ const AnalysisDashboard = () => {
       setConfirmedSelectedKecamatanPrediksi(initialSelection);
     }
   }, [allKecamatan]);
+
+  // Menggabungkan data aktual dan prediksi untuk tabel dan peta kota
   const combinedTableData = useMemo(() => {
-    if (!aggregatedData || !predictedData) return { data: [], columns: [] };
-    const combinedData = aggregatedData.map((aggRow) => {
-      const predRow = predictedData.find(
-        (p) => p.kecamatan === aggRow.kecamatan
-      );
-      return { ...aggRow, ...(predRow || {}) };
+    if (!aggregatedData && !predictedData) return { data: [], columns: [] };
+    
+    const combinedDataMap = new Map<string, AggregatedData | PredictedData>();
+
+    // Tambahkan data aktual terlebih dahulu
+    if (aggregatedData) {
+        aggregatedData.forEach(row => {
+            combinedDataMap.set(row.kecamatan, { ...row });
+        });
+    }
+
+    // Tambahkan atau timpa dengan data prediksi
+    if (predictedData) {
+        predictedData.forEach(row => {
+            const existingRow = combinedDataMap.get(row.kecamatan) || { kecamatan: row.kecamatan };
+            combinedDataMap.set(row.kecamatan, { ...existingRow, ...row });
+        });
+    }
+    
+    const combinedResultData = Array.from(combinedDataMap.values());
+    combinedResultData.sort((a, b) => a.kecamatan.localeCompare(b.kecamatan));
+
+    // Menentukan combinedColumns secara dinamis dari semua bulan di aggregated dan predicted
+    const allMonthsSet = new Set<string>();
+    if (aggregatedColumns.length > 1) {
+        aggregatedColumns.slice(1).forEach(col => allMonthsSet.add(col));
+    }
+    if (predictionColumns.length > 1) {
+        predictionColumns.slice(1).forEach(col => allMonthsSet.add(col));
+    }
+
+    const sortedAllMonths = Array.from(allMonthsSet).sort((a, b) => {
+        const monthA = parseInt(String(a).slice(0, -2));
+        const yearA = parseInt(String(a).slice(-2));
+        const monthB = parseInt(String(b).slice(0, -2));
+        const yearB = parseInt(String(b).slice(-2));
+        
+        if (yearA !== yearB) return yearA - yearB;
+        return monthA - monthB;
     });
-    const predColsOnly = predictionColumns.filter((c) => c !== "kecamatan");
-    const combinedColumns = [...aggregatedColumns, ...predColsOnly];
-    return { data: combinedData, columns: combinedColumns };
+
+    const finalCombinedColumns = ["kecamatan", ...sortedAllMonths];
+
+    return { data: combinedResultData, columns: finalCombinedColumns };
   }, [aggregatedData, predictedData, aggregatedColumns, predictionColumns]);
+
+
   useEffect(() => {
     if (combinedTableData.columns.length > 0 && !confirmedMapMonth) {
       const actualMonths = aggregatedColumns.filter((c) => c !== "kecamatan");
@@ -499,6 +302,7 @@ const AnalysisDashboard = () => {
       }
     }
   }, [aggregatedColumns, combinedTableData.columns, confirmedMapMonth]);
+
   const chartData = useMemo(() => {
     if (!aggregatedData || confirmedSelectedKecamatan.length === 0) return [];
     const monthColumns = aggregatedColumns.filter((c) => c !== "kecamatan");
@@ -512,6 +316,7 @@ const AnalysisDashboard = () => {
       return dataPoint;
     });
   }, [aggregatedData, aggregatedColumns, confirmedSelectedKecamatan]);
+
   const predictedChartData = useMemo(() => {
     if (!predictedData || confirmedSelectedKecamatanPrediksi.length === 0)
       return [];
@@ -528,20 +333,21 @@ const AnalysisDashboard = () => {
   }, [predictedData, predictionColumns, confirmedSelectedKecamatanPrediksi]);
 
   const availableMonthsForMap = useMemo(() => {
-    return combinedTableData.columns.filter((c) => c !== "kecamatan");
+    const allMonths = combinedTableData.columns.filter((c) => c !== "kecamatan");
+    return allMonths;
   }, [combinedTableData.columns]);
 
-  // Hitung fase dominan untuk seluruh kota Tasikmalaya
   const cityWideDominantPhase = useMemo(() => {
-    if (!aggregatedData || !confirmedMapMonth) return null;
+    if (!combinedTableData.data || !confirmedMapMonth) return null;
 
-    const allPhasesInMonth = aggregatedData
+    const allPhasesInMonth = combinedTableData.data
       .map((row) => row[confirmedMapMonth])
       .filter((v) => v != null);
 
-    return getModus(allPhasesInMonth);
-  }, [aggregatedData, confirmedMapMonth]);
+    if (allPhasesInMonth.length === 0) return null;
 
+    return getModus(allPhasesInMonth);
+  }, [combinedTableData.data, confirmedMapMonth]);
 
   const handleConfirmMapMonth = () => setConfirmedMapMonth(pendingMapMonth);
   const handlePendingKecamatanSelect = (kecamatan: string) =>
@@ -566,17 +372,18 @@ const AnalysisDashboard = () => {
   };
 
   const lineColors = [
-    "#8884d8",
-    "#82ca9d",
-    "#ffc658",
-    "#ff8042",
-    "#0088FE",
-    "#00C49F",
-    "#FFBB28",
-    "#FF8042",
-    "#A4DE6C",
-    "#D0ED57",
+    "#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE",
+    "#00C49F", "#FFBB28", "#FF8042", "#A4DE6C", "#D0ED57",
   ];
+
+  // PERBAIKAN: Hitung domain Y-axis berdasarkan phaseOrder untuk dikunci
+  const yAxisDomain = useMemo(() => {
+    const minVal = Math.min(...phaseOrder);
+    const maxVal = Math.max(...phaseOrder);
+    // Kita ingin domain yang sedikit lebih lebar dari min/max fase agar garis tidak menempel tepi
+    return [minVal - 0.5, maxVal + 0.5]; // Sesuaikan padding jika perlu
+  }, [phaseOrder]);
+
 
   return (
     <section
@@ -609,7 +416,6 @@ const AnalysisDashboard = () => {
           <p className="mt-4 text-lg font-semibold text-red-800">
             Gagal Memuat Data
           </p>
-          {/* Menampilkan pesan error secara lebih informatif */}
           <p className="mt-2 text-sm text-red-700">{error}</p>
         </div>
       )}
@@ -740,7 +546,7 @@ const AnalysisDashboard = () => {
               </p>
               <div className="mb-4">
                 <Label htmlFor="kecamatan-select">
-                  Pilih Kecamatan (Data Aktual)
+                  Pilih Kecamatan (Data Actual)
                 </Label>
                 <Select open={isSelectOpen} onOpenChange={setIsSelectOpen}>
                   <SelectTrigger id="kecamatan-select">
@@ -794,8 +600,8 @@ const AnalysisDashboard = () => {
                       type="number"
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={12}
-                      domain={["dataMin", "dataMax"]}
-                      ticks={yAxisTicks}
+                      domain={yAxisDomain as [number, number]} // PERBAIKAN: Kunci domain Y-axis
+                      ticks={yAxisTicks} // PERBAIKAN: Gunakan yAxisTicks dari utils
                       tickFormatter={(value) =>
                         yAxisValueMap[String(value)] || ""
                       }
@@ -902,8 +708,8 @@ const AnalysisDashboard = () => {
                       type="number"
                       stroke="hsl(var(--muted-foreground))"
                       fontSize={12}
-                      domain={["dataMin", "dataMax"]}
-                      ticks={yAxisTicks}
+                      domain={yAxisDomain as [number, number]} // PERBAIKAN: Kunci domain Y-axis
+                      ticks={yAxisTicks} // PERBAIKAN: Gunakan yAxisTicks dari utils
                       tickFormatter={(value) =>
                         yAxisValueMap[String(value)] || ""
                       }
@@ -928,7 +734,7 @@ const AnalysisDashboard = () => {
             </CardContent>
           </Card>
         
-            {/* NEW Card: Peta Sebaran Fase Tanam Kota */}
+            {/* NEW Card: Peta Agregasi Fase Tanam Kota */}
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center">

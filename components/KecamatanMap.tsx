@@ -1,18 +1,23 @@
+// C:\Project\ksa-produksi-padi\components\KecamatanMap.tsx
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-'use client'; 
+'use client';
 
 import React, { useMemo } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css'; // Import CSS Leaflet di sini
+import 'leaflet/dist/leaflet.css';
 import { LatLngExpression } from 'leaflet';
 import * as turf from '@turf/turf';
 import { GeoJsonObject } from 'geojson';
 
+// PERBAIKAN: Import helper functions dari file utils.tsx
+import { yAxisValueMap, getPhaseColor, formatKsaDate } from "@/lib/utils"; // Pastikan formatKsaDate juga diimport jika digunakan di sini
+
 interface KecamatanMapProps {
     geoJsonKecamatan: any;
     geoJsonSawah: any;
-    dataFase: any[];
+    dataFase: any[]; // Ini adalah data modus per kecamatan
     selectedMonth: string;
     phaseColorMapping: (phase: number | null) => string;
 }
@@ -20,7 +25,6 @@ interface KecamatanMapProps {
 const KecamatanMap: React.FC<KecamatanMapProps> = ({ geoJsonKecamatan, geoJsonSawah, dataFase, selectedMonth, phaseColorMapping }) => {
     const center: LatLngExpression = [-7.35, 108.22];
 
-    // Memoize data fase untuk pencarian yang lebih cepat
     const faseLookup = useMemo(() => {
         const lookup = new Map();
         dataFase.forEach(d => {
@@ -29,7 +33,6 @@ const KecamatanMap: React.FC<KecamatanMapProps> = ({ geoJsonKecamatan, geoJsonSa
         return lookup;
     }, [dataFase, selectedMonth]);
 
-    // Proses penggabungan data sawah dengan fase
     const processedSawahGeoJSON = useMemo(() => {
         if (!geoJsonSawah || !geoJsonSawah.features || faseLookup.size === 0) {
             return null;
@@ -64,7 +67,6 @@ const KecamatanMap: React.FC<KecamatanMapProps> = ({ geoJsonKecamatan, geoJsonSa
 
     }, [geoJsonSawah, geoJsonKecamatan, faseLookup, phaseColorMapping]);
 
-    // Style untuk lapisan GeoJSON Sawah
     const styleSawah = (feature: any) => {
         const defaultFillColor = feature.properties.color || '#808080';
         let fillOpacity = 0.8;
@@ -81,7 +83,6 @@ const KecamatanMap: React.FC<KecamatanMapProps> = ({ geoJsonKecamatan, geoJsonSa
         };
     };
 
-    // Style untuk lapisan GeoJSON Kecamatan (batas saja, tidak diisi warna fase)
     const styleKecamatanBoundary = () => {
         return {
             fillColor: 'transparent',
@@ -101,15 +102,10 @@ const KecamatanMap: React.FC<KecamatanMapProps> = ({ geoJsonKecamatan, geoJsonSa
         layer.bindTooltip(feature.properties.KECAMATAN, { permanent: true, direction: 'center', className: 'kecamatan-label' });
     };
 
-    // Pastikan yAxisValueMap ini konsisten dengan yang ada di AnalysisDashboard.tsx
-    const yAxisValueMap: { [key: string]: string } = { '1': 'Vegetatif 1', '2': 'Vegetatif 2', '3.1': 'Generatif 1', '3.2': 'Generatif 2', '3.3': 'Generatif 3', '4': 'Panen', '5': 'Persiapan Lahan', '13': 'Pasca Panen', '6': 'Puso', '8': 'Bukan Sawah', '4.5': 'Pasca Panen' };
-
-
     return (
         <MapContainer center={center} zoom={12} style={{ height: '500px', width: '100%', borderRadius: '8px', zIndex: 1 }}>
             <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-            {/* Lapisan GeoJSON Kecamatan (hanya batas) */}
             {geoJsonKecamatan && (
                 <GeoJSON
                     data={geoJsonKecamatan}
@@ -118,7 +114,6 @@ const KecamatanMap: React.FC<KecamatanMapProps> = ({ geoJsonKecamatan, geoJsonSa
                 />
             )}
 
-            {/* Lapisan GeoJSON Sawah (digambar di atas kecamatan untuk interaktivitas) */}
             {processedSawahGeoJSON && (
                 <GeoJSON
                     key={selectedMonth}
