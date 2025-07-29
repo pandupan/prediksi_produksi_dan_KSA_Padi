@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-    ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
+    ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Label
 } from 'recharts';
 import * as XLSX from 'xlsx';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,7 +33,7 @@ const yAxisValueMap: { [key: string]: string } = {
 };
 
 const getPhaseColor = (phase: number | undefined): string => {
-    if (phase === undefined) return "transparent"; // Fase kosong dibuat transparan
+    if (phase === undefined) return "transparent";
     const colors: { [key: string]: string } = {
         "5": "#A16D28",   // Persiapan Lahan
         "1": "#3E5F44",   // Vegetatif 1
@@ -95,16 +95,14 @@ const CompareKsa = () => {
         const fetchDataAndProcess = async () => {
             setIsLoading(true);
             try {
+                // ... Logika pengambilan dan pemrosesan data tidak diubah ...
                 const phaseCycle = [5.0, 1.0, 2.0, 3.1, 3.2, 3.3, 4.0];
                 const ksaUrl = "https://raw.githubusercontent.com/pandupan/material_source_magang_bps_tasikmalaya/main/dataset_ksa_tasik_2025_v9.xlsx";
-                
-                // 1. Ambil dan proses data KSA
                 const response = await fetch(ksaUrl);
                 const buffer = await response.arrayBuffer();
                 const workbook = XLSX.read(buffer, { type: "buffer" });
                 const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                 const jsonData: KsaDataItem[] = XLSX.utils.sheet_to_json(worksheet);
-
                 const monthlyCityPhase: { [key: string]: number } = {};
                 const monthsData: { [key: string]: number[] } = {};
                 jsonData.forEach(row => {
@@ -120,8 +118,6 @@ const CompareKsa = () => {
                     });
                 });
                 Object.keys(monthsData).forEach(month => { monthlyCityPhase[month] = getModus(monthsData[month]); });
-
-                // 2. Proses data harga beras
                 const monthlyAvgPrices: { [key: string]: { sum: number; count: number } } = {};
                 (rawRiceData as RiceDataItem[]).forEach(item => {
                     const month = (item.date as string).substring(0, 7);
@@ -132,13 +128,10 @@ const CompareKsa = () => {
                     });
                     if (dailyCount > 0) { monthlyAvgPrices[month].sum += dailySum / dailyCount; monthlyAvgPrices[month].count++; }
                 });
-
                 const historicalPriceData = Object.keys(monthlyAvgPrices).map(month => ({
                     bulan: month,
                     harga_rata_rata: monthlyAvgPrices[month].count > 0 ? monthlyAvgPrices[month].sum / monthlyAvgPrices[month].count : 0,
                 })).sort((a, b) => a.bulan.localeCompare(b.bulan));
-
-                // 3. Gabungkan data
                 let combinedHistoricalData: ProcessedChartData[] = historicalPriceData.map(priceItem => {
                     const fase = monthlyCityPhase[priceItem.bulan];
                     const monthDate = new Date(priceItem.bulan + '-02');
@@ -150,53 +143,34 @@ const CompareKsa = () => {
                         nama_fase: fase ? yAxisValueMap[String(fase)] : "Data Kosong",
                     };
                 }).filter(d => d.harga_rata_rata && d.harga_rata_rata > 0);
-
-                // --- LOGIKA PREDIKSI BARU (SIMPLE ARIMA CONCEPT) ---
                 const historicalPrices = combinedHistoricalData.map(d => d.harga_rata_rata!);
                 const predictions: number[] = [];
-                let currentPrices = historicalPrices.slice(-12); // Gunakan 12 bulan terakhir sebagai basis
-
+                let currentPrices = historicalPrices.slice(-12);
                 for (let i = 0; i < 12; i++) {
-                    // Moving Average: Rata-rata dari 3 bulan terakhir
                     const movingAverage = currentPrices.slice(-3).reduce((a, b) => a + b, 0) / 3;
-                    
-                    // Trend/Momentum: Perbedaan antara 2 bulan terakhir
                     const trend = currentPrices[currentPrices.length - 1] - currentPrices[currentPrices.length - 2];
-                    
-                    // Prediksi = Rata-rata bergerak + sedikit tren
-                    let nextPrice = movingAverage + (trend * 0.5); // Kurangi dampak tren agar tidak terlalu drastis
-
-                    // Tambahkan sedikit penyesuaian berdasarkan musim panen yang akan datang
-                    const futureMonth = new Date(combinedHistoricalData[combinedHistoricalData.length-1].bulan);
+                    let nextPrice = movingAverage + (trend * 0.5);
+                    const futureMonth = new Date(combinedHistoricalData[combinedHistoricalData.length - 1].bulan);
                     futureMonth.setMonth(futureMonth.getMonth() + i + 1);
-                    const isHarvestSeason = [0,1,2,3].includes(futureMonth.getMonth() + 1);
-
+                    const isHarvestSeason = [0, 1, 2, 3].includes(futureMonth.getMonth() + 1);
                     if (isHarvestSeason) {
-                        nextPrice *= 0.99; // Harga cenderung sedikit turun saat panen
+                        nextPrice *= 0.99;
                     } else {
-                        nextPrice *= 1.005; // Harga cenderung sedikit naik di luar panen
+                        nextPrice *= 1.005;
                     }
-
                     predictions.push(nextPrice);
-                    currentPrices.push(nextPrice); // Tambahkan prediksi baru ke data untuk iterasi selanjutnya
+                    currentPrices.push(nextPrice);
                 }
-
                 const lastHistoricalIndex = combinedHistoricalData.length - 1;
                 const lastHistoricalDate = new Date(combinedHistoricalData[lastHistoricalIndex].bulan + '-02');
-                
-                // PERBAIKAN: Logika baru untuk mengisi fase tanam prediksi
                 const lastValidPhaseEntry = [...combinedHistoricalData].reverse().find(d => d.fase && phaseCycle.includes(d.fase));
                 const lastKnownPhase = lastValidPhaseEntry?.fase || 5.0;
                 let lastPhaseIndexInCycle = phaseCycle.indexOf(lastKnownPhase);
-                
                 const futureData = predictions.map((price, i) => {
                     const futureDate = new Date(lastHistoricalDate.getFullYear(), lastHistoricalDate.getMonth() + i + 1, 2);
                     const month = futureDate.toISOString().substring(0, 7);
-                    
-                    // Lanjutkan siklus fase dari titik historis terakhir
                     lastPhaseIndexInCycle = (lastPhaseIndexInCycle + 1) % phaseCycle.length;
                     const futurePhase = phaseCycle[lastPhaseIndexInCycle];
-
                     return {
                         bulan: month,
                         bulanFormatted: futureDate.toLocaleDateString('id', { month: 'short', year: '2-digit' }),
@@ -205,15 +179,11 @@ const CompareKsa = () => {
                         nama_fase: yAxisValueMap[String(futurePhase)],
                     };
                 });
-                
-                // "Stitching" untuk menghilangkan lompatan
                 if (futureData.length > 0) {
                     combinedHistoricalData[lastHistoricalIndex].prediksi_harga = combinedHistoricalData[lastHistoricalIndex].harga_rata_rata;
                 }
-                
                 const fullChartData = [...combinedHistoricalData, ...futureData];
                 const displayData = fullChartData.filter(d => d.bulan >= '2024-01');
-
                 setChartData(displayData);
 
             } catch (error) {
@@ -246,34 +216,95 @@ const CompareKsa = () => {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
+
+                    {/* --- PENYESUAIAN TATA LETAK LEGENDA --- */}
+
                     <div className="w-full h-[500px]">
                         <ResponsiveContainer>
-                            <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 40, bottom: 40 }}>
+                            <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: 30, bottom: 20 }}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="bulanFormatted" angle={-45} textAnchor="end" height={80} interval="preserveStartEnd" />
-                                <YAxis 
-                                    yAxisId="left" 
-                                    tickFormatter={(value) => formatRupiah(value)} 
-                                    width={100} 
+                                <YAxis
+                                    yAxisId="left"
+                                    tickFormatter={(value) => formatRupiah(value)}
+                                    width={100}
                                     domain={['dataMin - 1125', 'dataMax + 1100']}
                                     ticks={[13000, 14000, 15000, 16000, 17000]}
                                 />
                                 <YAxis yAxisId="right" orientation="right" tick={false} axisLine={false} />
 
                                 <Tooltip content={<CustomTooltip />} />
-                                <Legend verticalAlign="top" wrapperStyle={{ paddingBottom: '20px' }}/>
                                 
-                                <Bar yAxisId="right" dataKey="fase" name="Fase Tanam" isAnimationActive={false}>
+                                <Bar yAxisId="right" dataKey="fase" isAnimationActive={false}>
                                     {chartData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={getPhaseColor(entry.fase)} />
                                     ))}
                                 </Bar>
                                 
-                                <Line yAxisId="left" type="monotone" dataKey="harga_rata_rata" name="Harga Rata-rata" stroke="#1E88E5" strokeWidth={3} dot={false} connectNulls />
-                                <Line yAxisId="left" type="monotone" dataKey="prediksi_harga" name="Prediksi Harga" stroke="#FF6F00" strokeWidth={3} strokeDasharray="5 5" dot={false} />
+                                <Line yAxisId="left" type="monotone" dataKey="harga_rata_rata" stroke="#1E88E5" strokeWidth={3} dot={false} connectNulls />
+                                <Line yAxisId="left" type="monotone" dataKey="prediksi_harga" stroke="#FF6F00" strokeWidth={3} strokeDasharray="5 5" dot={false} />
                             </ComposedChart>
                         </ResponsiveContainer>
                     </div>
+
+                                        <div className="mb-8 pb-4 border-b flex flex-wrap justify-center gap-y-4 gap-x-6 md:gap-x-10 text-xs md:text-sm">
+                        {/* Kolom 1 */}
+                        <div className="space-y-3">
+                            <div className="flex items-center">
+                                <span className="w-10 h-5 mr-3 rounded-sm" style={{ backgroundColor: '#A16D28' }}></span>
+                                <span>Persiapan Lahan</span>
+                            </div>
+                            <div className="flex items-center">
+                                <span className="w-10 h-5 mr-3 rounded-sm" style={{ backgroundColor: '#3E5F44' }}></span>
+                                <span>Vegetatif 1</span>
+                            </div>
+                        </div>
+
+                        {/* Kolom 2 */}
+                        <div className="space-y-3">
+                            <div className="flex items-center">
+                                <span className="w-10 h-5 mr-3 rounded-sm" style={{ backgroundColor: '#5E936C' }}></span>
+                                <span>Vegetatif 2</span>
+                            </div>
+                            <div className="flex items-center">
+                                <span className="w-10 h-5 mr-3 rounded-sm" style={{ backgroundColor: '#93DA97' }}></span>
+                                <span>Generatif 1</span>
+                            </div>
+                        </div>
+
+                        {/* Kolom 3 */}
+                        <div className="space-y-3">
+                            <div className="flex items-center">
+                                <span className="w-10 h-5 mr-3 rounded-sm" style={{ backgroundColor: '#B5E8B8' }}></span>
+                                <span>Generatif 2</span>
+                            </div>
+                            <div className="flex items-center">
+                                <span className="w-10 h-5 mr-3 rounded-sm" style={{ backgroundColor: '#DAF5DB' }}></span>
+                                <span>Generatif 3</span>
+                            </div>
+                        </div>
+
+                        {/* Kolom 4 */}
+                        <div className="space-y-3">
+                            <div className="flex items-center">
+                                <span className="w-10 h-5 mr-3 rounded-sm" style={{ backgroundColor: '#FED16A' }}></span>
+                                <span>Panen</span>
+                            </div>
+                             <div className="flex items-center">
+                                <div className="w-10 h-1 mr-3 bg-[#1E88E5]"></div>
+                                <span>Harga Rata-rata</span>
+                            </div>
+                        </div>
+
+                        {/* Kolom 5 */}
+                        <div className="space-y-3">
+                            <div className="flex items-center">
+                                <div className="w-10 h-1 mr-3" style={{ background: 'repeating-linear-gradient(90deg, #FF6F00, #FF6F00 4px, transparent 4px, transparent 8px)' }}></div>
+                                <span>Prediksi Harga</span>
+                            </div>
+                        </div>
+                    </div>
+
                 </CardContent>
             </Card>
         </section>
