@@ -13,18 +13,18 @@ const usesData = [
   },
   {
     icon: <FiMap size={28} className="text-green-700" />,
-    title: "Pemetaan Spasial",
-    description: "Menyediakan informasi spasial tentang fase tumbuh padi.",
-  },
-  {
-    icon: <FiBarChart size={28} className="text-green-700" />,
-    title: "Informasi Cepat",
-    description: "Menghasilkan data luas panen dengan lebih cepat (real-time).",
+    title: "Mengukur Estimasi Luas Panen",
+    description: "KSA dapat mengestimasi luasan tanaman padi dalam periode tertentu secara objektif dan akurat.",
   },
   {
     icon: <FiTrendingUp size={28} className="text-green-700" />,
     title: "Modernisasi Statistik",
     description: "Menggantikan metode konvensional dengan teknologi modern.",
+  },
+  {
+    icon: <FiBarChart size={28} className="text-green-700" />,
+    title: "Dukungan Kebijakan Ketahanan Pangan",
+    description: 'Mewujudkan visi negara (Sustainable Development Goals "Zero Hunger").',
   },
 ];
 

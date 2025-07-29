@@ -1,5 +1,4 @@
 import AboutKsa from "@/components/pages/landing-page/AboutKsa";
-import AnalysisDashboard from "@/components/pages/visual-page/AnalysisDashboard";
 import Benefits from "@/components/pages/landing-page/Benefits";
 import Hero from "@/components/pages/landing-page/Hero";
 
@@ -12,7 +11,6 @@ export default function Home() {
       />
       <AboutKsa />
       <Benefits />
-      <AnalysisDashboard/>
     </main>
   );
 }

@@ -45,7 +45,7 @@ const AboutKsa = () => {
             </h2>
             <div className="w-24 h-1 bg-green-700 mx-auto md:mx-0 mb-6" />
             <p className="text-lg text-gray-600 leading-relaxed">
-              Metode Survei Kerangka Sampel Area (KSA) adalah pendekatan inovatif BPS yang memanfaatkan teknologi citra satelit untuk mengamati fase tumbuh padi. Dari persiapan lahan hingga panen, KSA menyediakan data luas panen yang objektif, modern, dan andal untuk mendukung ketahanan pangan.
+              KSA (Kerangka Sampel Area) adalah survei berbasis area yang dilakukan dengan pengamatan langsung terhadap sampel segmen dan bertujuan untuk mengestimasi luasan dengan ekstrapolasi dari sampel ke populasi dalam periode yang relatif pendek (rapid estimate). Survei KSA menggunakan metode pengambilan sampel yang menggunakan area lahan sebagai unit sampel, Mulai dari persiapan lahan hingga panen. Harapannya KSA menyediakan data luas panen yang objektif, modern, dan andal untuk mendukung terwujudnya ketahanan pangan.
             </p>
           </motion.div>
 

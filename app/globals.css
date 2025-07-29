@@ -122,6 +122,13 @@
 }
 
 .hero-img {
+  background-image: url("https://freeimghost.net/images/2025/07/29/lahan_padi.jpg");
+  background-position: 90% center; 
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.hero-img-2 {
   background-image: url("https://freeimghost.net/images/2025/07/25/hero-section.jpg");
   background-position: 90% center; 
   background-repeat: no-repeat;

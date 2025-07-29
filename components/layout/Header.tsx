@@ -19,7 +19,7 @@ const Header = () => {
 
   useEffect(() => {
     
-    if (pathname === "/") {
+    if (pathname === "/" || pathname ==="/visualisasi-ksa") {
       const changeColor = () => {
         if (window.scrollY >= 90) {
           setColor("#ffffff");
@@ -54,14 +54,14 @@ const Header = () => {
               src="/images/logo.png"
               width={40}
               height={40}
-              alt="Logo Lumbung Nusa"
+              alt="Logo Pare Hurip"
             />
             <div
               className="hidden sm:block ml-3 text-center text-sm tracking-[2.5px]"
               style={{ color: `${textColor}` }}
             >
-              <h2 className="font-bold">LUMBUNG</h2>
-              <h2 className="font-bold">NUSA</h2>
+              <h2 className="font-bold">PARE</h2>
+              <h2 className="font-bold">HURIP</h2>
             </div>
           </div>
         </Link>
@@ -76,7 +76,7 @@ const Header = () => {
             <Link href="/#about-ksa">Beranda</Link>
           </li>
           <li className="p-2 hover:text-green-600 transition-colors duration-200">
-            <Link href="/#visualisasi-interaktif">Visualisasi</Link>
+            <Link href="/visualisasi-ksa">Visualisasi</Link>
           </li>
           <li className="p-2 hover:text-green-600 transition-colors duration-200">
             <Link href="/compare">Komparasi</Link>
@@ -110,7 +110,7 @@ const Header = () => {
               <Link href="/#about-ksa">Beranda</Link>
             </li>
             <li onClick={handleNav}>
-              <Link href="/#visualisasi-interaktif">Visualiasi</Link>
+              <Link href="/visualisasi-ksa">Visualiasi</Link>
             </li>
             <li onClick={handleNav}>
               <Link href="/compare">Komparasi</Link>

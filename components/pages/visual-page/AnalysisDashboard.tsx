@@ -387,13 +387,13 @@ const AnalysisDashboard = () => {
     >
       <div className="text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-          Visualisasi Hasil Analisis
+          Visualisasi Hasil Analisis Kerangka Sampel Area
         </h2>
         <div className="w-24 h-1 bg-green-700 mx-auto" />
         <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
           Jelajahi data KSA terbaru dan prediksi untuk 12 bulan ke depan.
-          Gunakan filter untuk melihat tren per kecamatan, atau lihat sebaran
-          fase tanam pada peta interaktif.
+          Anda dapat menggunakan filter untuk melihat tren per kecamatan, atau lihat sebaran
+          fase tanam pada peta geo-spasial interaktif.
         </p>
       </div>
 
@@ -422,12 +422,12 @@ const AnalysisDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <LineChartIcon className="w-5 h-5 mr-2" />
-                Visualisasi Tren Fase Tanam
+                Visualisasi Tren Siklus Pertumbuhan Padi
               </CardTitle>
               <CardDescription>
                 Grafik ini menggambarkan tren historis fase tanam padi yang
                 paling dominan per kecamatan di Kota Tasikmalaya. Dengan
-                memvisualisasikan nilai modus bulanan, Anda dapat mengamati
+                memvisualisasikan tren padi bulanan, Anda dapat mengamati
                 siklus tanam dan pola perubahan fase pertumbuhan padi dari waktu
                 ke waktu secara dinamis.
               </CardDescription>
@@ -523,12 +523,12 @@ const AnalysisDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <LineChartIcon className="w-5 h-5 mr-2" />
-                Visualisasi Prediksi Tren Fase Tanam
+                Visualisasi Prediksi Dari Tren Siklus Pertumbuhan Padi
               </CardTitle>
               <CardDescription>
                 Grafik ini menyajikan proyeksi fase pertumbuhan padi untuk 12
                 bulan ke depan, berdasarkan pola historis dari data KSA terakhir.
-                Dengan algoritma sederhana, kami memprediksi transisi fase
+                Dengan algoritma support vector machine (SVM), kami memprediksi transisi fase
                 tanam, memungkinkan Anda untuk mengantisipasi siklus pertanian
                 mendatang per kecamatan di Kota Tasikmalaya.
               </CardDescription>
@@ -536,7 +536,7 @@ const AnalysisDashboard = () => {
             <CardContent>
               <p className="text-sm text-gray-600 mb-4 flex items-center">
                 <Info size={16} className="mr-2 text-blue-500" />
-                Sama seperti grafik sebelumnya, pilih kecamatan yang ingin Anda
+                Silahkan anda dapat memilih kecamatan yang ingin Anda
                 lihat prediksinya.
               </p>
               <div className="mb-4">
@@ -627,59 +627,8 @@ const AnalysisDashboard = () => {
               </div>
             </CardContent>
           </Card>
-        
-          {/* Card: Peta Agregasi Fase Tanam Kota */}
-          <Card>
-              <CardHeader>
-                  <CardTitle className="flex items-center">
-                      <Globe className="w-5 h-5 mr-2" />
-                      Peta Agregasi Fase Tanam Kota
-                  </CardTitle>
-                  <CardDescription>
-                      Peta ini menampilkan fase tanam dominan untuk seluruh wilayah Kota Tasikmalaya
-                      berdasarkan bulan yang dipilih. Seluruh area kota akan diwarnai sesuai dengan
-                      fase tanam yang paling sering muncul (modus) di semua kecamatan pada bulan tersebut.
-                  </CardDescription>
-              </CardHeader>
-              <CardContent>
-                  <p className="text-sm text-gray-600 mb-4 flex items-center">
-                      <Info size={16} className="mr-2 text-blue-500" />
-                      Pilih bulan yang diinginkan, kemudian klik "Terapkan" untuk melihat fase dominan
-                      seluruh kota pada peta.
-                  </p>
-                  <div className="flex items-center gap-2 mb-4">
-                      <div className="flex-grow">
-                          <Label htmlFor="month-select-city-map">Pilih Bulan</Label>
-                          <Select
-                              value={pendingMapMonth}
-                              onValueChange={setPendingMapMonth}
-                          >
-                              <SelectTrigger id="month-select-city-map">
-                                  <SelectValue placeholder="Pilih bulan..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  {availableMonthsForMap.map((month) => (
-                                      <SelectItem key={month} value={month}>
-                                          {formatKsaDate(month)}
-                                      </SelectItem>
-                                  ))}
-                              </SelectContent>
-                          </Select>
-                      </div>
-                      <Button onClick={handleConfirmMapMonth} className="self-end">
-                          Terapkan
-                      </Button>
-                  </div>
-                  <TasikCityMap
-                      geoJsonKecamatan={tasikmalayaGeoJson}
-                      dataFaseKota={cityWideDominantPhase}
-                      phaseColorMapping={getPhaseColor}
-                      selectedMonth={confirmedMapMonth}
-                  />
-              </CardContent>
-          </Card>
-
-          {/* Card: Peta Sebaran Fase Tanam (Per Kecamatan/Sawah) */}
+          
+                    {/* Card: Peta Sebaran Fase Tanam (Per Kecamatan/Sawah) */}
           <Card>
               <CardHeader>
                   <CardTitle className="flex items-center">
@@ -730,6 +679,58 @@ const AnalysisDashboard = () => {
                   />
               </CardContent>
           </Card>
+        
+          {/* Card: Peta Agregasi Fase Tanam Kota */}
+          <Card>
+              <CardHeader>
+                  <CardTitle className="flex items-center">
+                      <Globe className="w-5 h-5 mr-2" />
+                      Peta Fase Tanam Kota Dominan Kota Tasikmalay
+                  </CardTitle>
+                  <CardDescription>
+                      Peta ini menampilkan fase tanam dominan untuk seluruh wilayah Kota Tasikmalaya
+                      berdasarkan bulan yang dipilih. Seluruh area kota akan diwarnai sesuai dengan
+                      fase tanam yang paling sering muncul di semua kecamatan pada bulan tersebut.
+                  </CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <p className="text-sm text-gray-600 mb-4 flex items-center">
+                      <Info size={16} className="mr-2 text-blue-500" />
+                      Pilih bulan yang diinginkan, kemudian klik "Terapkan" untuk melihat fase dominan
+                      seluruh kota pada peta.
+                  </p>
+                  <div className="flex items-center gap-2 mb-4">
+                      <div className="flex-grow">
+                          <Label htmlFor="month-select-city-map">Pilih Bulan</Label>
+                          <Select
+                              value={pendingMapMonth}
+                              onValueChange={setPendingMapMonth}
+                          >
+                              <SelectTrigger id="month-select-city-map">
+                                  <SelectValue placeholder="Pilih bulan..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  {availableMonthsForMap.map((month) => (
+                                      <SelectItem key={month} value={month}>
+                                          {formatKsaDate(month)}
+                                      </SelectItem>
+                                  ))}
+                              </SelectContent>
+                          </Select>
+                      </div>
+                      <Button onClick={handleConfirmMapMonth} className="self-end">
+                          Terapkan
+                      </Button>
+                  </div>
+                  <TasikCityMap
+                      geoJsonKecamatan={tasikmalayaGeoJson}
+                      dataFaseKota={cityWideDominantPhase}
+                      phaseColorMapping={getPhaseColor}
+                      selectedMonth={confirmedMapMonth}
+                  />
+              </CardContent>
+          </Card>
+
         </>
       )}
     </section>
