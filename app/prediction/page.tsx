@@ -3,9 +3,9 @@ import React from "react";
 
 const Prediction = () => {
   return (
-    <>
+    <div className="mt-20">
       <InputFile />
-    </>
+    </div>
   );
 };
 

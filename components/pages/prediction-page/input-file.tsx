@@ -5,101 +5,54 @@
 
 import React, { useState, useRef, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import * as XLSX from "xlsx";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
+  Card, CardHeader, CardTitle, CardDescription, CardContent,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
+  Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
 } from "@/components/ui/table";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
-  UploadCloud,
-  File as FileIcon,
-  Loader2,
-  AlertCircle,
-  BarChart3,
-  LineChart as LineChartIcon,
-  Table2,
-  AreaChart,
-  MapPin,
-  Globe,
+  UploadCloud, File as FileIcon, Loader2, AlertCircle, LineChart as LineChartIcon,
+  AreaChart, MapPin, Globe, Download, FileSpreadsheet, RotateCcw,
 } from "lucide-react";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import {
-  ValueType,
-  NameType,
-  Payload,
+  ValueType, NameType, Payload,
 } from "recharts/types/component/DefaultTooltipContent";
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from "@/components/ui/accordion";
 
 // --- Import Data GeoJSON ---
 import { tasikmalayaGeoJson } from "@/lib/tasikmalaya-geojson";
 import { sawahGeoJson } from "@/lib/bpn-sawah-geojson";
 
 // --- Interfaces ---
-interface ExcelData {
-  [key: string]: any;
-}
-interface AggregatedData {
-  kecamatan: string;
-  [month: string]: any;
-}
-interface PredictedData {
-  kecamatan: string;
-  [month: string]: any;
-}
+interface ExcelData { [key: string]: any; }
+interface AggregatedData { kecamatan: string; [month: string]: any; }
+interface PredictedData { kecamatan: string; [month:string]: any; }
 
-// --- Dynamic Import untuk Peta (Client-Side Only) ---
+// --- Dynamic Import ---
 const KecamatanMapDynamic = dynamic(() => import("@/components/KecamatanMap"), {
   ssr: false,
-  loading: () => (
-    <div className="h-[500px] w-full flex items-center justify-center bg-muted rounded-lg">
-      <Loader2 className="w-8 h-8 animate-spin" />
-      <p className="ml-2">Memuat Peta Sawah/Kecamatan...</p>
-    </div>
-  ),
+  loading: () => <div className="h-[500px] w-full flex items-center justify-center bg-muted rounded-lg"><Loader2 className="w-8 h-8 animate-spin" /><p className="ml-2">Memuat Peta...</p></div>,
 });
-
-// PERUBAHAN: Mengimpor komponen peta dari file terpisah
 const TasikCityMapDynamic = dynamic(() => import("@/components/TasikCityMap"), {
-    ssr: false,
-    loading: () => (
-        <div className="h-[500px] w-full flex items-center justify-center bg-muted rounded-lg">
-            <Loader2 className="w-8 h-8 animate-spin" />
-            <p className="ml-2">Memuat Peta Kota...</p>
-        </div>
-    ),
+  ssr: false,
+  loading: () => <div className="h-[500px] w-full flex items-center justify-center bg-muted rounded-lg"><Loader2 className="w-8 h-8 animate-spin" /><p className="ml-2">Memuat Peta...</p></div>,
 });
-
 
 // --- Helper Functions & Constants ---
 const formatKsaDate = (header: string, short = false): string => {
@@ -111,102 +64,56 @@ const formatKsaDate = (header: string, short = false): string => {
     const fullYear = 2000 + year;
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
     const longMonthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-    if (month >= 1 && month <= 12)
-      return short ? `${monthNames[month - 1]} '${year}` : `${longMonthNames[month - 1]} ${fullYear}`;
+    if (month >= 1 && month <= 12) return short ? `${monthNames[month - 1]} '${year}` : `${longMonthNames[month - 1]} ${fullYear}`;
     return header;
-  } catch (error) {
-    return header;
-  }
+  } catch (error) { return header; }
 };
-
 const kecamatanMap: { [key: string]: string } = {
-  "3278071": "Bungursari", "3278030": "Cibeureum", "3278050": "Cihideung",
-  "3278080": "Cipedes", "3278070": "Indihiang", "3278010": "Kawalu",
-  "3278060": "Mangkubumi", "3278031": "Purbaratu", "3278020": "Tamansari",
-  "3278040": "Tawang",
+  "3278071": "Bungursari", "3278030": "Cibeureum", "3278050": "Cihideung", "3278080": "Cipedes",
+  "3278070": "Indihiang", "3278010": "Kawalu", "3278060": "Mangkubumi", "3278031": "Purbaratu",
+  "3278020": "Tamansari", "3278040": "Tawang",
 };
-
 const getModus = (arr: any[]): any => {
   if (!arr.length) return null;
-  const freqMap: { [key: string]: number } = {};
-  let maxFreq = 0;
-  let modus: any = null;
+  const freqMap: { [key: string]: number } = {}; let maxFreq = 0; let modus: any = null;
   arr.forEach((item) => {
-    const key = String(item);
-    freqMap[key] = (freqMap[key] || 0) + 1;
-    if (freqMap[key] > maxFreq) {
-      maxFreq = freqMap[key];
-      modus = item;
-    }
+    const key = String(item); freqMap[key] = (freqMap[key] || 0) + 1;
+    if (freqMap[key] > maxFreq) { maxFreq = freqMap[key]; modus = item; }
   });
   return modus;
 };
-
 const validateStructure = (headers: string[]): string | null => {
   const lowercasedHeaders = headers.map((h) => h.toLowerCase().trim());
-  if (!lowercasedHeaders.includes("id segmen"))
-    return "Struktur file tidak sesuai. Kolom 'id segmen' tidak ditemukan.";
-  if (!lowercasedHeaders.includes("subsegmen"))
-    return "Struktur file tidak sesuai. Kolom 'subsegmen' tidak ditemukan.";
+  if (!lowercasedHeaders.includes("id segmen")) return "Struktur file tidak sesuai. Kolom 'id segmen' tidak ditemukan.";
+  if (!lowercasedHeaders.includes("subsegmen")) return "Struktur file tidak sesuai. Kolom 'subsegmen' tidak ditemukan.";
   return null;
 };
-
 const displayOrder = [1.0, 2.0, 3.1, 3.2, 3.3, 4.0, 13.0, 5.0];
 const yValueToLabel: { [key: string]: string } = {
-  "0": "Vegetatif 1", "1": "Vegetatif 2", "2": "Generatif 1", "3": "Generatif 2",
-  "4": "Generatif 3", "5": "Panen", "6": "Pasca Panen", "7": "Persiapan Lahan",
+  "0": "Vegetatif 1", "1": "Vegetatif 2", "2": "Generatif 1", "3": "Generatif 2", "4": "Generatif 3",
+  "5": "Panen", "6": "Pasca Panen", "7": "Persiapan Lahan",
 };
 const phaseToYValue: { [key: string]: number } = {};
-displayOrder.forEach((phase, index) => {
-  phaseToYValue[String(phase)] = index;
-});
+displayOrder.forEach((phase, index) => { phaseToYValue[String(phase)] = index; });
 const yAxisTicksNumeric = displayOrder.map((_, index) => index);
-
 const getPhaseColor = (phase: number | null): string => {
   if (phase === null) return "#9E9E9E";
   switch (phase) {
-    case 5: return "#A16D28";
-    case 1: return "#3E5F44";
-    case 2: return "#5E936C";
-    case 3.1: return "#93DA97";
-    case 3.2: return "#B5E8B8";
-    case 3.3: return "#DAF5DB";
-    case 4: return "#FED16A";
-    case 13: return "#665123";
-    case 6: return "#101010";
-    case 8: return "#BDBDBD";
-    default: return "#78909C";
+    case 5: return "#A16D28"; case 1: return "#3E5F44"; case 2: return "#5E936C";
+    case 3.1: return "#93DA97"; case 3.2: return "#B5E8B8"; case 3.3: return "#DAF5DB";
+    case 4: return "#FED16A"; case 13: return "#665123"; case 6: return "#101010";
+    case 8: return "#BDBDBD"; default: return "#78909C";
   }
 };
-
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <Card className="p-2 text-sm shadow-lg">
-        <CardHeader className="p-1 font-bold border-b mb-1">
-          {formatKsaDate(String(label))}
-        </CardHeader>
-        <CardContent className="p-1">
-          {payload.map((pld: Payload<ValueType, NameType>) => (
-            <div key={pld.dataKey as React.Key} className="flex items-center">
-              <div
-                style={{ backgroundColor: pld.color as string }}
-                className="w-2.5 h-2.5 rounded-full mr-2 shrink-0"
-              ></div>
-              <span className="flex-1 truncate">{pld.dataKey as string}: </span>
-              <span className="font-semibold ml-2">
-                {yValueToLabel[String(pld.value)] || 'N/A'}
-              </span>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <Card className="p-2 text-sm shadow-lg"><CardHeader className="p-1 font-bold border-b mb-1">{formatKsaDate(String(label))}</CardHeader><CardContent className="p-1">{payload.map((pld: Payload<ValueType, NameType>) => (<div key={pld.dataKey as React.Key} className="flex items-center"><div style={{ backgroundColor: pld.color as string }} className="w-2.5 h-2.5 rounded-full mr-2 shrink-0"></div><span className="flex-1 truncate">{pld.dataKey as string}: </span><span className="font-semibold ml-2">{yValueToLabel[String(pld.value)] || 'N/A'}</span></div>))}</CardContent></Card>
     );
   }
   return null;
 };
 
-// --- Main Component ---
 const InputFile = () => {
   const [data, setData] = useState<ExcelData[] | null>(null);
   const [columns, setColumns] = useState<string[]>([]);
@@ -227,11 +134,9 @@ const InputFile = () => {
   const [pendingSelectedKecamatanPrediksi, setPendingSelectedKecamatanPrediksi] = useState<string[]>([]);
   const [confirmedSelectedKecamatanPrediksi, setConfirmedSelectedKecamatanPrediksi] = useState<string[]>([]);
   const [isSelectOpenPrediksi, setIsSelectOpenPrediksi] = useState(false);
-  
-  const yAxisDomain = useMemo(() => {
-    const tickCount = yAxisTicksNumeric.length;
-    return [-0.5, tickCount - 0.5];
-  }, []);
+
+  const yAxisDomain = useMemo(() => { const tickCount = yAxisTicksNumeric.length; return [-0.5, tickCount - 0.5]; }, []);
+  const lineColors = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A4DE6C", "#D0ED57"];
 
   const generatePredictions = (aggData: AggregatedData[], aggCols: string[]): { predictions: PredictedData[]; columns: string[] } => {
     const faseSiklus = [5.0, 1.0, 2.0, 3.1, 3.2, 3.3, 4.0, 13.0];
@@ -245,32 +150,21 @@ const InputFile = () => {
     const newColumns: string[] = ["kecamatan"];
     let currentMonthKey = lastMonthKey;
     if (!currentMonthKey) return { predictions: [], columns: [] };
-    for (let i = 0; i < 12; i++) {
-      currentMonthKey = getNextMonthKey(currentMonthKey);
-      newColumns.push(currentMonthKey);
-    }
+    for (let i = 0; i < 12; i++) { currentMonthKey = getNextMonthKey(currentMonthKey); newColumns.push(currentMonthKey); }
     aggData.forEach((row) => {
       const newRow: PredictedData = { kecamatan: row.kecamatan };
       let lastPhase = parseFloat(row[lastMonthKey]);
-      if (isNaN(lastPhase) || ![...faseSiklus, 6.0, 8.0].includes(lastPhase)) {
-        lastPhase = 5.0; 
-      }
-      
+      if (isNaN(lastPhase) || ![...faseSiklus, 6.0, 8.0].includes(lastPhase)) { lastPhase = 5.0; }
       let currentIndex = faseSiklus.indexOf(lastPhase);
-      if (currentIndex === -1) { 
-          currentIndex = faseSiklus.indexOf(5.0) -1; 
-      }
-
+      if (currentIndex === -1) { currentIndex = faseSiklus.indexOf(5.0) -1; }
       newColumns.slice(1).forEach((monthKey) => {
         currentIndex = (currentIndex + 1) % faseSiklus.length;
-        const nextPhase = faseSiklus[currentIndex];
-        newRow[monthKey] = nextPhase;
+        const nextPhase = faseSiklus[currentIndex]; newRow[monthKey] = nextPhase;
       });
       predictions.push(newRow);
     });
     return { predictions, columns: newColumns };
   };
-
   const processAggregation = (rows: ExcelData[], originalColumns: string[]) => {
     const idSegmenKey = originalColumns.find((c) => c.toLowerCase().trim() === "id segmen");
     const subsegmenKey = originalColumns.find((c) => c.toLowerCase().trim() === "subsegmen");
@@ -281,21 +175,16 @@ const InputFile = () => {
       const kodeKecamatan = idSegmen.substring(0, 7);
       const namaKecamatan = kecamatanMap[kodeKecamatan];
       if (namaKecamatan) {
-        if (!groupedByKecamatan[namaKecamatan])
-          groupedByKecamatan[namaKecamatan] = [];
+        if (!groupedByKecamatan[namaKecamatan]) groupedByKecamatan[namaKecamatan] = [];
         groupedByKecamatan[namaKecamatan].push(row);
       }
     });
-    const monthColumns = originalColumns.filter(
-      (c) => c.toLowerCase().trim() !== "id segmen" && c.toLowerCase().trim() !== "subsegmen"
-    );
+    const monthColumns = originalColumns.filter((c) => c.toLowerCase().trim() !== "id segmen" && c.toLowerCase().trim() !== "subsegmen");
     const result: AggregatedData[] = [];
     for (const namaKecamatan in groupedByKecamatan) {
       const kecamatanData = groupedByKecamatan[namaKecamatan];
       const newRow: AggregatedData = { kecamatan: namaKecamatan };
-      monthColumns.forEach((month) => {
-        newRow[month] = getModus(kecamatanData.map((d) => d[month]).filter((v) => v != null));
-      });
+      monthColumns.forEach((month) => { newRow[month] = getModus(kecamatanData.map((d) => d[month]).filter((v) => v != null)); });
       result.push(newRow);
     }
     result.sort((a, b) => a.kecamatan.localeCompare(b.kecamatan));
@@ -303,65 +192,62 @@ const InputFile = () => {
     const aggCols = ["kecamatan", ...monthColumns];
     setAggregatedColumns(aggCols);
     const { predictions: preds, columns: predCols } = generatePredictions(result, aggCols);
-    setPredictedData(preds);
-    setPredictionColumns(predCols);
-    const kecamatanList = result.map((d) => d.kecamatan);
-    setAllKecamatan(kecamatanList);
+    setPredictedData(preds); setPredictionColumns(predCols);
+    setAllKecamatan(result.map((d) => d.kecamatan));
   };
-
   const processFile = (file: File) => {
-    setIsLoading(true);
-    setError(null);
-    setData(null);
-    setAggregatedData(null);
-    setPredictedData(null);
-    setFileName(file.name);
-    
+    setIsLoading(true); setError(null); setData(null); setAggregatedData(null); setPredictedData(null); setFileName(file.name);
     const reader = new FileReader();
     reader.onload = (e: ProgressEvent<FileReader>) => {
       try {
-        const buffer = e.target?.result as ArrayBuffer;
-        const workbook = XLSX.read(buffer, { type: "buffer" });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
+        const buffer = e.target?.result as ArrayBuffer; const workbook = XLSX.read(buffer, { type: "buffer" });
+        const sheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[sheetName];
         const jsonData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
         if (jsonData.length > 1) {
           const headers: string[] = jsonData[0].map(String);
-          const validationError = validateStructure(headers);
-          if (validationError) throw new Error(validationError);
-          const rows: ExcelData[] = jsonData.slice(1).map((row: any[]) =>
-            headers.reduce((acc, header, index) => {
-              if (header) acc[header] = row[index];
-              return acc;
-            }, {} as ExcelData)
-          );
-          setColumns(headers.filter((h) => h));
-          setData(rows);
-          processAggregation(rows, headers.filter((h) => h));
-        } else {
-          setError("File Excel tidak memiliki data atau hanya header.");
-        }
-      } catch (err: any) {
-        setError(err.message || "Terjadi kesalahan saat memproses file.");
-      } finally {
-        setIsLoading(false);
-      }
+          const validationError = validateStructure(headers); if (validationError) throw new Error(validationError);
+          const rows: ExcelData[] = jsonData.slice(1).map((row: any[]) => headers.reduce((acc, header, index) => { if (header) acc[header] = row[index]; return acc; }, {} as ExcelData));
+          setColumns(headers.filter((h) => h)); setData(rows); processAggregation(rows, headers.filter((h) => h));
+        } else { setError("File Excel tidak memiliki data atau hanya header."); }
+      } catch (err: any) { setError(err.message || "Terjadi kesalahan saat memproses file."); } finally { setIsLoading(false); }
     };
-    reader.onerror = () => {
-      setError("Gagal membaca file.");
-      setIsLoading(false);
-    };
+    reader.onerror = () => { setError("Gagal membaca file."); setIsLoading(false); };
     reader.readAsArrayBuffer(file);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files?.[0]) processFile(event.target.files[0]);
+    const file = event.target.files?.[0]; if (file) { processFile(file); }
+    if(event.target) { event.target.value = ""; }
   };
-  const handleDragOver = (event: React.DragEvent<HTMLLabelElement>) => event.preventDefault();
-  const handleDrop = (event: React.DragEvent<HTMLLabelElement>) => {
-    event.preventDefault();
-    if (event.dataTransfer.files?.[0]) processFile(event.dataTransfer.files[0]);
+  const handleImportClick = () => { fileInputRef.current?.click(); };
+  const handleReset = () => {
+    setData(null); setAggregatedData(null); setPredictedData(null); setColumns([]);
+    setAllKecamatan([]); setFileName(null); setError(null);
+    if(fileInputRef.current) { fileInputRef.current.value = ""; }
   };
+  const handleConfirmMapMonth = () => setConfirmedMapMonth(pendingMapMonth);
+  const handlePendingKecamatanSelect = (kecamatan: string) => setPendingSelectedKecamatan((prev) => prev.includes(kecamatan) ? prev.filter((k) => k !== kecamatan) : [...prev, kecamatan]);
+  const handleConfirmSelection = () => { setIsSelectOpen(false); setConfirmedSelectedKecamatan(pendingSelectedKecamatan); };
+  const handlePendingKecamatanSelectPrediksi = (kecamatan: string) => setPendingSelectedKecamatanPrediksi((prev) => prev.includes(kecamatan) ? prev.filter((k) => k !== kecamatan) : [...prev, kecamatan]);
+  const handleConfirmSelectionPrediksi = () => { setIsSelectOpenPrediksi(false); setConfirmedSelectedKecamatanPrediksi(pendingSelectedKecamatanPrediksi); };
+  const handleSelectAll = (isPredictive: boolean) => {
+    const targetSetter = isPredictive ? setPendingSelectedKecamatanPrediksi : setPendingSelectedKecamatan;
+    targetSetter([...allKecamatan]);
+  };
+  const handleUnselectAll = (isPredictive: boolean) => {
+    const targetSetter = isPredictive ? setPendingSelectedKecamatanPrediksi : setPendingSelectedKecamatan;
+    targetSetter([]);
+  };
+
+  useEffect(() => {
+    if (allKecamatan.length > 0) {
+      const defaultSelection = ["Mangkubumi", "Indihiang", "Cibeureum"];
+      const availableDefault = defaultSelection.filter((k) => allKecamatan.includes(k));
+      const initialSelection = availableDefault.length > 0 ? availableDefault : allKecamatan.slice(0, 3);
+      setPendingSelectedKecamatan(initialSelection); setConfirmedSelectedKecamatan(initialSelection);
+      setPendingSelectedKecamatanPrediksi(initialSelection); setConfirmedSelectedKecamatanPrediksi(initialSelection);
+    }
+  }, [allKecamatan]);
 
   const combinedTableData = useMemo(() => {
     if (!aggregatedData) return { data: [], columns: [] };
@@ -370,30 +256,14 @@ const InputFile = () => {
       return { ...aggRow, ...(predRow || {}) };
     });
     const predColsOnly = predictionColumns.filter((c) => c !== "kecamatan");
-    const combinedColumns = [...aggregatedColumns, ...predColsOnly];
-    return { data: combinedData, columns: combinedColumns };
+    return { data: combinedData, columns: [...aggregatedColumns, ...predColsOnly] };
   }, [aggregatedData, predictedData, aggregatedColumns, predictionColumns]);
-
-  useEffect(() => {
-    if (allKecamatan.length > 0) {
-      const defaultSelection = ["Mangkubumi", "Indihiang", "Cibeureum"];
-      const availableDefault = defaultSelection.filter((k) => allKecamatan.includes(k));
-      const initialSelection = availableDefault.length > 0 ? availableDefault : allKecamatan.slice(0, 3);
-      setPendingSelectedKecamatan(initialSelection);
-      setConfirmedSelectedKecamatan(initialSelection);
-      setPendingSelectedKecamatanPrediksi(initialSelection);
-      setConfirmedSelectedKecamatanPrediksi(initialSelection);
-    }
-  }, [allKecamatan]);
 
   useEffect(() => {
     if (combinedTableData.columns.length > 0 && !confirmedMapMonth) {
       const actualMonths = aggregatedColumns.filter((c) => c !== "kecamatan");
       const defaultMonth = actualMonths.length > 0 ? actualMonths[actualMonths.length - 1] : combinedTableData.columns[1];
-      if (defaultMonth) {
-        setPendingMapMonth(defaultMonth);
-        setConfirmedMapMonth(defaultMonth);
-      }
+      if (defaultMonth) { setPendingMapMonth(defaultMonth); setConfirmedMapMonth(defaultMonth); }
     }
   }, [aggregatedColumns, combinedTableData.columns, confirmedMapMonth]);
 
@@ -404,8 +274,7 @@ const InputFile = () => {
       const dataPoint: any = { name: formatKsaDate(month, true) };
       aggregatedData.forEach((row) => {
         if (confirmedSelectedKecamatan.includes(row.kecamatan)) {
-          const originalPhase = parseFloat(row[month]);
-          dataPoint[row.kecamatan] = phaseToYValue[String(originalPhase)] ?? null;
+          dataPoint[row.kecamatan] = phaseToYValue[String(parseFloat(row[month]))] ?? null;
         }
       });
       return dataPoint;
@@ -419,8 +288,7 @@ const InputFile = () => {
       const dataPoint: any = { name: formatKsaDate(month, true) };
       predictedData.forEach((row) => {
         if (confirmedSelectedKecamatanPrediksi.includes(row.kecamatan)) {
-          const originalPhase = parseFloat(row[month]);
-          dataPoint[row.kecamatan] = phaseToYValue[String(originalPhase)] ?? null;
+          dataPoint[row.kecamatan] = phaseToYValue[String(parseFloat(row[month]))] ?? null;
         }
       });
       return dataPoint;
@@ -428,117 +296,293 @@ const InputFile = () => {
   }, [predictedData, predictionColumns, confirmedSelectedKecamatanPrediksi]);
   
   const cityWideDominantPhase = useMemo(() => {
-      if (!combinedTableData.data || !confirmedMapMonth) return null;
-      const allPhasesInMonth = combinedTableData.data.map((row) => row[confirmedMapMonth]).filter((v) => v != null);
-      if (allPhasesInMonth.length === 0) return null;
-      return getModus(allPhasesInMonth);
+    if (!combinedTableData.data || !confirmedMapMonth) return null;
+    const allPhasesInMonth = combinedTableData.data.map((row) => row[confirmedMapMonth]).filter((v) => v != null);
+    if (allPhasesInMonth.length === 0) return null;
+    return getModus(allPhasesInMonth);
   }, [combinedTableData.data, confirmedMapMonth]);
 
   const availableMonthsForMap = useMemo(() => {
     return combinedTableData.columns.filter((c) => c !== "kecamatan");
   }, [combinedTableData.columns]);
 
-  const handleConfirmMapMonth = () => setConfirmedMapMonth(pendingMapMonth);
-  const handlePendingKecamatanSelect = (kecamatan: string) => setPendingSelectedKecamatan((prev) => prev.includes(kecamatan) ? prev.filter((k) => k !== kecamatan) : [...prev, kecamatan]);
-  const handleConfirmSelection = () => { setIsSelectOpen(false); setConfirmedSelectedKecamatan(pendingSelectedKecamatan); };
-  const handlePendingKecamatanSelectPrediksi = (kecamatan: string) => setPendingSelectedKecamatanPrediksi((prev) => prev.includes(kecamatan) ? prev.filter((k) => k !== kecamatan) : [...prev, kecamatan]);
-  const handleConfirmSelectionPrediksi = () => { setIsSelectOpenPrediksi(false); setConfirmedSelectedKecamatanPrediksi(pendingSelectedKecamatanPrediksi); };
-
-  // --- FUNGSI BARU UNTUK SELECT/UNSELECT ALL ---
-  const handleSelectAll = (isPredictive: boolean) => {
-    if (isPredictive) {
-      setPendingSelectedKecamatanPrediksi([...allKecamatan]);
-    } else {
-      setPendingSelectedKecamatan([...allKecamatan]);
-    }
-  };
-
-  const handleUnselectAll = (isPredictive: boolean) => {
-    if (isPredictive) {
-      setPendingSelectedKecamatanPrediksi([]);
-    } else {
-      setPendingSelectedKecamatan([]);
-    }
-  };
-
-  const lineColors = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A4DE6C", "#D0ED57"];
+  const AccordionStep = ({ value, label, description, imageUrl }: { value: string; label: string; description: string; imageUrl: string }) => (
+    <AccordionItem value={value} className="border-b-0">
+      <AccordionTrigger className="hover:no-underline">{label}</AccordionTrigger>
+      <AccordionContent>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{description}</p>
+        <div className="relative h-40 md:h-56 w-full rounded-md overflow-hidden border">
+          <Image
+            src={imageUrl}
+            alt={`Contoh untuk ${label}`}
+            layout="fill"
+            objectFit="contain"
+            className="bg-gray-50 dark:bg-gray-800"
+          />
+        </div>
+      </AccordionContent>
+    </AccordionItem>
+  );
 
   return (
     <section className="w-full max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Unggah File Excel</CardTitle>
-          <CardDescription>Seret & lepas file `.xlsx` dengan struktur KSA yang sesuai.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <label htmlFor="file-upload" className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" onDragOver={handleDragOver} onDrop={handleDrop}>
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <UploadCloud className="w-10 h-10 mb-4 text-gray-500" />
-              <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Klik untuk unggah</span> atau seret dan lepas</p>
-              <p className="text-xs text-gray-500">Membutuhkan kolom 'id segmen' dan 'subsegmen'</p>
-            </div>
-            <Input id="file-upload" type="file" className="sr-only" ref={fileInputRef} onChange={handleFileChange} accept=".xlsx, .xls, .csv" />
-          </label>
-          {fileName && !isLoading && !error && (<div className="mt-4 text-sm text-center text-green-600">File berhasil diproses: <span className="font-medium">{fileName}</span></div>)}
-        </CardContent>
-      </Card>
+      <div className="text-center">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+          Memasukan Data Kerangka Sampel Area (KSA)
+        </h2>
+        <div className="w-24 h-1 bg-green-700 mx-auto" />
+        <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+          Anda dapat melakukan import data dengan format yang disesuaikan sehingga setelahnya dapat dilakukan explorasi mendalam menggunakan filter untuk melihat tren per kecamatan, atau lihat
+          sebaran fase tanam pada peta geo-spasial interaktif.
+        </p>
+      </div>
 
-      {isLoading && (<div className="flex items-center justify-center p-4 text-blue-600"><Loader2 className="w-6 h-6 animate-spin mr-2" /><span>Memvalidasi dan memproses file...</span></div>)}
-      {error && (<div className="flex items-center justify-center p-4 text-red-600"><AlertCircle className="w-6 h-6 mr-2" /><p>{error}</p></div>)}
+      <Input
+        id="file-upload"
+        type="file"
+        className="sr-only"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".xlsx"
+      />
 
-      {data && (<Card><CardHeader><CardTitle className="flex items-center"><FileIcon className="w-5 h-5 mr-2" />Pratinjau Data Mentah</CardTitle><CardDescription>Menampilkan semua baris mentah dari file yang diunggah.</CardDescription></CardHeader><CardContent><ScrollArea className="w-full whitespace-nowrap rounded-md border"><div className="h-[450px] relative"><Table><TableHeader className="sticky top-0 z-10 bg-background"><TableRow>{columns.map((col) => (<TableHead key={col} className="font-semibold">{formatKsaDate(col)}</TableHead>))}</TableRow></TableHeader><TableBody>{data.map((row, rowIndex) => (<TableRow key={rowIndex}>{columns.map((col) => (<TableCell key={col}>{row[col]}</TableCell>))}</TableRow>))}</TableBody></Table></div><ScrollBar orientation="horizontal" /></ScrollArea></CardContent></Card>)}
-      
-      {aggregatedData && aggregatedData.length > 0 && (
+      {!data && !isLoading && !error && (
+        <div className="space-y-6">
+          <Card className="w-full shadow-sm">
+            <CardContent>
+              <div className="flex text-center items-center rounded-lg justify-center flex-col w-full space-y-4 lg:py-14 py-4 px-2 bg-muted dark:bg-gray-800/50">
+                <FileSpreadsheet className="w-20 h-20 text-gray-400" />
+                <h2 className="font-semibold text-lg text-center">
+                  Silakan unggah file untuk melakukan import data
+                </h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm text-center m-auto max-w-2xl">
+                  Gunakan file Excel (.xlsx) yang berisi data KSA. Untuk
+                  memastikan format yang benar, Anda bisa mengunduh template
+                  yang telah kami sediakan dengan menekan tombol{" "}
+                  <b>'Unduh Template'</b> di bawah ini.
+                </p>
+                <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
+                  <a
+                    href="https://raw.githubusercontent.com/pandupan/material_source_magang_bps_tasikmalaya/main/template_ksa_tasik.xlsx"
+                    download="template_ksa_tasik.xlsx"
+                  >
+                    <Button
+                      variant="outline"
+                      className="text-sm lg:text-base gap-2 w-full sm:w-auto"
+                    >
+                      <Download className="w-5 h-5" />
+                      Unduh File Template
+                    </Button>
+                  </a>
+                  <Button
+                    className="text-sm lg:text-base gap-2 bg-[#016630]"
+                    onClick={handleImportClick}
+                  >
+                    <UploadCloud className="w-5 h-5" />
+                    Import Data dari File
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>Bingung dengan format file?</CardTitle>
+              <CardDescription>
+                Berikut adalah panduan pengisian untuk setiap kolom pada file
+                template.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible className="w-full space-y-2">
+                <AccordionStep
+                  value="item-1"
+                  label="Langkah 1: Kolom 'id segmen' dan 'subsegmen'"
+                  description="Dua kolom pertama ini adalah kunci identifikasi. 'id segmen' adalah kode wilayah 7-digit unik dari BPS yang menandakan lokasi segmen sawah. 'subsegmen' adalah pembagian lebih kecil di dalam segmen tersebut. Pastikan kedua kolom ini ada dan terisi dengan benar untuk setiap baris data."
+                  imageUrl="https://freeimghost.net/images/2025/07/30/Group-858.png"
+                />
+                <AccordionStep
+                  value="item-2"
+                  label="Langkah 2: Kolom Data Bulanan (Contoh: 124, 224)"
+                  description="Setiap kolom setelah 'subsegmen' mewakili satu periode observasi bulanan. Penamaannya menggunakan format numerik 'BTT' atau 'BBTT' (Bulan dan Tahun). Contoh: '124' untuk Januari 2024, '1124' untuk November 2024. Format ini penting untuk pemrosesan data secara kronologis."
+                  imageUrl="https://freeimghost.net/images/2025/07/29/8db38a67-efe4-4757-a5ba-413d8b8ecb31.png"
+                />
+                <AccordionStep
+                  value="item-3"
+                  label="Langkah 3: Pengisian Data Fase Tanam"
+                  description="Isi setiap sel pada kolom bulan dengan kode numerik yang sesuai dengan fase pertumbuhan padi. Misalnya, '1' untuk Vegetatif 1, '2' untuk Vegetatif 2, '3.1' untuk Generatif 1, '5' untuk Panen, dan '13' untuk Bero/Pasca Panen. Data yang kosong akan diabaikan, jadi pastikan setiap observasi terisi."
+                  imageUrl="https://freeimghost.net/images/2025/07/29/8db38a67-efe4-4757-a5ba-413d8b8ecb31.png"
+                />
+              </Accordion>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center p-10 h-64">
+          <Loader2 className="w-10 h-10 animate-spin text-green-700" />
+          <span className="mt-4 text-lg font-semibold text-gray-700">
+            Memvalidasi dan memproses file...
+          </span>
+        </div>
+      )}
+
+      {!isLoading && error && (
+        <div className="flex flex-col items-center justify-center p-10 h-64 bg-red-50 dark:bg-red-900/20 rounded-lg">
+          <AlertCircle className="w-10 h-10 text-red-600" />
+          <p className="mt-4 text-lg font-semibold text-red-800 dark:text-red-300">
+            Gagal Memproses File
+          </p>
+          <p className="mt-2 text-sm text-red-700 dark:text-red-400 text-center">
+            {error}
+          </p>
+          <Button
+            onClick={handleReset}
+            variant="destructive"
+            className="mt-4 gap-2"
+          >
+            <RotateCcw className="w-4 h-4" /> Coba Lagi
+          </Button>
+        </div>
+      )}
+
+      {data && !isLoading && !error && (
         <>
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><LineChartIcon className="w-5 h-5 mr-2" />Visualisasi Tren Fase Tanam</CardTitle>
-              <CardDescription>Grafik tren nilai modus fase tanam dari waktu ke waktu per kecamatan.</CardDescription>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="flex items-center">
+                    <FileIcon className="w-5 h-5 mr-2" />
+                    Data Berhasil Diimpor
+                  </CardTitle>
+                  <CardDescription>
+                    File{" "}
+                    <span className="font-semibold text-green-600">
+                      {fileName}
+                    </span>{" "}
+                    telah diproses. Berikut hasilnya.
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={handleReset}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <RotateCcw className="w-4 h-4" /> Unggah File Lain
+                </Button>
+              </div>
+            </CardHeader>
+          </Card>
+
+          {/* Sisa komponen visualisasi (Grafik dan Peta) tetap sama */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <LineChartIcon className="w-5 h-5 mr-2" />
+                Visualisasi Tren Fase Tanam
+              </CardTitle>
+              <CardDescription>
+                Grafik tren nilai modus fase tanam dari waktu ke waktu per
+                kecamatan.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
-                <Label htmlFor="kecamatan-select">Pilih Kecamatan (Data Aktual)</Label>
+                <Label htmlFor="kecamatan-select">
+                  Pilih Kecamatan (Data Aktual)
+                </Label>
                 <Select open={isSelectOpen} onOpenChange={setIsSelectOpen}>
-                  <SelectTrigger id="kecamatan-select"><SelectValue placeholder="Pilih kecamatan..." /></SelectTrigger>
+                  <SelectTrigger id="kecamatan-select">
+                    <SelectValue placeholder="Pilih kecamatan..." />
+                  </SelectTrigger>
                   <SelectContent className="max-h-60 overflow-y-auto">
-                    {/* --- BLOK SELECT/UNSELECT ALL --- */}
                     <div className="flex justify-between p-2 border-b">
-                        <Button
-                          variant="link"
-                          className="p-0 h-auto text-xs"
-                          onClick={() => handleSelectAll(false)}
-                        >
-                          Pilih Semua
-                        </Button>
-                        <Button
-                          variant="link"
-                          className="p-0 h-auto text-xs text-destructive"
-                          onClick={() => handleUnselectAll(false)}
-                        >
-                          Hapus Pilihan
-                        </Button>
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-xs"
+                        onClick={() => handleSelectAll(false)}
+                      >
+                        Pilih Semua
+                      </Button>
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-xs text-destructive"
+                        onClick={() => handleUnselectAll(false)}
+                      >
+                        Hapus Pilihan
+                      </Button>
                     </div>
                     {allKecamatan.map((kecamatan) => (
-                      <div key={kecamatan} className="relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm" onMouseDown={(e) => e.preventDefault()} onClick={() => handlePendingKecamatanSelect(kecamatan)}>
-                        <Checkbox id={`checkbox-${kecamatan}`} checked={pendingSelectedKecamatan.includes(kecamatan)} className="absolute left-2 top-1/2 -translate-y-1/2" />
-                        <Label htmlFor={`checkbox-${kecamatan}`} className="flex-1 cursor-pointer">{kecamatan}</Label>
+                      <div
+                        key={kecamatan}
+                        className="relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handlePendingKecamatanSelect(kecamatan)}
+                      >
+                        <Checkbox
+                          id={`checkbox-${kecamatan}`}
+                          checked={pendingSelectedKecamatan.includes(kecamatan)}
+                          className="absolute left-2 top-1/2 -translate-y-1/2"
+                        />
+                        <Label
+                          htmlFor={`checkbox-${kecamatan}`}
+                          className="flex-1 cursor-pointer"
+                        >
+                          {kecamatan}
+                        </Label>
                       </div>
                     ))}
                     <div className="p-2 border-t">
-                      <Button onClick={handleConfirmSelection} className="w-full">Konfirmasi Pilihan</Button>
+                      <Button
+                        onClick={handleConfirmSelection}
+                        className="w-full"
+                      >
+                        Konfirmasi Pilihan
+                      </Button>
                     </div>
                   </SelectContent>
                 </Select>
               </div>
               <div className="h-[400px] w-full relative">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <LineChart
+                    data={chartData}
+                    margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} domain={yAxisDomain as [number, number]} ticks={yAxisTicksNumeric} tickFormatter={(value) => yValueToLabel[String(value)] || ""} interval={0} width={100} />
+                    <XAxis
+                      dataKey="name"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <YAxis
+                      type="number"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      domain={yAxisDomain as [number, number]}
+                      ticks={yAxisTicksNumeric}
+                      tickFormatter={(value) =>
+                        yValueToLabel[String(value)] || ""
+                      }
+                      interval={0}
+                      width={100}
+                    />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    {confirmedSelectedKecamatan.map((kecamatan, index) => (<Line key={kecamatan} type="monotone" dataKey={kecamatan} stroke={lineColors[index % lineColors.length]} strokeWidth={2} activeDot={{ r: 6 }} connectNulls />))}
+                    {confirmedSelectedKecamatan.map((kecamatan, index) => (
+                      <Line
+                        key={kecamatan}
+                        type="monotone"
+                        dataKey={kecamatan}
+                        stroke={lineColors[index % lineColors.length]}
+                        strokeWidth={2}
+                        activeDot={{ r: 6 }}
+                        connectNulls
+                      />
+                    ))}
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -547,84 +591,211 @@ const InputFile = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><AreaChart className="w-5 h-5 mr-2" />Visualisasi Prediksi Tren Fase Tanam</CardTitle>
-              <CardDescription>Grafik ini menampilkan tren prediksi fase tanam untuk 12 bulan ke depan.</CardDescription>
+              <CardTitle className="flex items-center">
+                <AreaChart className="w-5 h-5 mr-2" />
+                Visualisasi Prediksi Tren Fase Tanam
+              </CardTitle>
+              <CardDescription>
+                Grafik ini menampilkan tren prediksi fase tanam untuk 12 bulan
+                ke depan.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
-                <Label htmlFor="kecamatan-select-prediksi">Pilih Kecamatan (Data Prediksi)</Label>
-                <Select open={isSelectOpenPrediksi} onOpenChange={setIsSelectOpenPrediksi}>
-                  <SelectTrigger id="kecamatan-select-prediksi"><SelectValue placeholder="Pilih kecamatan..." /></SelectTrigger>
+                <Label htmlFor="kecamatan-select-prediksi">
+                  Pilih Kecamatan (Data Prediksi)
+                </Label>
+                <Select
+                  open={isSelectOpenPrediksi}
+                  onOpenChange={setIsSelectOpenPrediksi}
+                >
+                  <SelectTrigger id="kecamatan-select-prediksi">
+                    <SelectValue placeholder="Pilih kecamatan..." />
+                  </SelectTrigger>
                   <SelectContent className="max-h-60 overflow-y-auto">
-                    {/* --- BLOK SELECT/UNSELECT ALL --- */}
                     <div className="flex justify-between p-2 border-b">
-                        <Button
-                          variant="link"
-                          className="p-0 h-auto text-xs"
-                          onClick={() => handleSelectAll(true)}
-                        >
-                          Pilih Semua
-                        </Button>
-                        <Button
-                          variant="link"
-                          className="p-0 h-auto text-xs text-destructive"
-                          onClick={() => handleUnselectAll(true)}
-                        >
-                          Hapus Pilihan
-                        </Button>
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-xs"
+                        onClick={() => handleSelectAll(true)}
+                      >
+                        Pilih Semua
+                      </Button>
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-xs text-destructive"
+                        onClick={() => handleUnselectAll(true)}
+                      >
+                        Hapus Pilihan
+                      </Button>
                     </div>
                     {allKecamatan.map((kecamatan) => (
-                      <div key={kecamatan} className="relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm" onMouseDown={(e) => e.preventDefault()} onClick={() => handlePendingKecamatanSelectPrediksi(kecamatan)}>
-                        <Checkbox id={`checkbox-prediksi-${kecamatan}`} checked={pendingSelectedKecamatanPrediksi.includes(kecamatan)} className="absolute left-2 top-1/2 -translate-y-1/2" />
-                        <Label htmlFor={`checkbox-prediksi-${kecamatan}`} className="flex-1 cursor-pointer">{kecamatan}</Label>
+                      <div
+                        key={kecamatan}
+                        className="relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() =>
+                          handlePendingKecamatanSelectPrediksi(kecamatan)
+                        }
+                      >
+                        <Checkbox
+                          id={`checkbox-prediksi-${kecamatan}`}
+                          checked={pendingSelectedKecamatanPrediksi.includes(
+                            kecamatan
+                          )}
+                          className="absolute left-2 top-1/2 -translate-y-1/2"
+                        />
+                        <Label
+                          htmlFor={`checkbox-prediksi-${kecamatan}`}
+                          className="flex-1 cursor-pointer"
+                        >
+                          {kecamatan}
+                        </Label>
                       </div>
                     ))}
                     <div className="p-2 border-t">
-                      <Button onClick={handleConfirmSelectionPrediksi} className="w-full">Konfirmasi Pilihan</Button>
+                      <Button
+                        onClick={handleConfirmSelectionPrediksi}
+                        className="w-full"
+                      >
+                        Konfirmasi Pilihan
+                      </Button>
                     </div>
                   </SelectContent>
                 </Select>
               </div>
               <div className="h-[400px] w-full relative">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={predictedChartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <LineChart
+                    data={predictedChartData}
+                    margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} domain={yAxisDomain as [number, number]} ticks={yAxisTicksNumeric} tickFormatter={(value) => yValueToLabel[String(value)] || ""} interval={0} width={100} />
+                    <XAxis
+                      dataKey="name"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <YAxis
+                      type="number"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      domain={yAxisDomain as [number, number]}
+                      ticks={yAxisTicksNumeric}
+                      tickFormatter={(value) =>
+                        yValueToLabel[String(value)] || ""
+                      }
+                      interval={0}
+                      width={100}
+                    />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    {confirmedSelectedKecamatanPrediksi.map((kecamatan, index) => (<Line key={kecamatan} type="monotone" dataKey={kecamatan} stroke={lineColors[index % lineColors.length]} strokeWidth={2} activeDot={{ r: 6 }} connectNulls />))}
+                    {confirmedSelectedKecamatanPrediksi.map(
+                      (kecamatan, index) => (
+                        <Line
+                          key={kecamatan}
+                          type="monotone"
+                          dataKey={kecamatan}
+                          stroke={lineColors[index % lineColors.length]}
+                          strokeWidth={2}
+                          activeDot={{ r: 6 }}
+                          connectNulls
+                        />
+                      )
+                    )}
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><Globe className="w-5 h-5 mr-2" />Peta Agregasi Fase Tanam Kota</CardTitle>
-              <CardDescription>Peta ini menampilkan fase tanam dominan untuk seluruh wilayah Kota Tasikmalaya pada bulan yang dipilih.</CardDescription>
+              <CardTitle className="flex items-center">
+                <Globe className="w-5 h-5 mr-2" />
+                Peta Agregasi Fase Tanam Kota
+              </CardTitle>
+              <CardDescription>
+                Peta ini menampilkan fase tanam dominan untuk seluruh wilayah
+                Kota Tasikmalaya pada bulan yang dipilih.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2 mb-4">
-                <div className="flex-grow"><Label htmlFor="month-select-city-map">Pilih Bulan</Label><Select value={pendingMapMonth} onValueChange={setPendingMapMonth}><SelectTrigger id="month-select-city-map"><SelectValue placeholder="Pilih bulan..." /></SelectTrigger><SelectContent>{availableMonthsForMap.map((month) => (<SelectItem key={month} value={month}>{formatKsaDate(month)}</SelectItem>))}</SelectContent></Select></div>
-                <Button onClick={handleConfirmMapMonth} className="self-end">Terapkan</Button>
+                <div className="flex-grow">
+                  <Label htmlFor="month-select-city-map">Pilih Bulan</Label>
+                  <Select
+                    value={pendingMapMonth}
+                    onValueChange={setPendingMapMonth}
+                  >
+                    <SelectTrigger id="month-select-city-map">
+                      <SelectValue placeholder="Pilih bulan..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableMonthsForMap.map((month) => (
+                        <SelectItem key={month} value={month}>
+                          {formatKsaDate(month)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleConfirmMapMonth} className="self-end">
+                  Terapkan
+                </Button>
               </div>
-              <TasikCityMapDynamic geoJsonKecamatan={tasikmalayaGeoJson} dataFaseKota={cityWideDominantPhase} phaseColorMapping={getPhaseColor} selectedMonth={confirmedMapMonth} />
+              <TasikCityMapDynamic
+                geoJsonKecamatan={tasikmalayaGeoJson}
+                dataFaseKota={cityWideDominantPhase}
+                phaseColorMapping={getPhaseColor}
+                selectedMonth={confirmedMapMonth}
+              />
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><MapPin className="w-5 h-5 mr-2" />Peta Sebaran Fase Tanam per Sawah</CardTitle>
-              <CardDescription>Peta ini memvisualisasikan fase tanam pada lahan sawah di setiap kecamatan. Pilih bulan lalu klik "Terapkan" untuk melihat perubahan.</CardDescription>
+              <CardTitle className="flex items-center">
+                <MapPin className="w-5 h-5 mr-2" />
+                Peta Sebaran Fase Tanam per Sawah
+              </CardTitle>
+              <CardDescription>
+                Peta ini memvisualisasikan fase tanam pada lahan sawah di setiap
+                kecamatan. Pilih bulan lalu klik "Terapkan" untuk melihat
+                perubahan.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2 mb-4">
-                <div className="flex-grow"><Label htmlFor="month-select-map">Pilih Bulan</Label><Select value={pendingMapMonth} onValueChange={setPendingMapMonth}><SelectTrigger id="month-select-map"><SelectValue placeholder="Pilih bulan..." /></SelectTrigger><SelectContent>{availableMonthsForMap.map((month) => (<SelectItem key={month} value={month}>{formatKsaDate(month)}</SelectItem>))}</SelectContent></Select></div>
-                <Button onClick={handleConfirmMapMonth} className="self-end">Terapkan</Button>
+                <div className="flex-grow">
+                  <Label htmlFor="month-select-map">Pilih Bulan</Label>
+                  <Select
+                    value={pendingMapMonth}
+                    onValueChange={setPendingMapMonth}
+                  >
+                    <SelectTrigger id="month-select-map">
+                      <SelectValue placeholder="Pilih bulan..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableMonthsForMap.map((month) => (
+                        <SelectItem key={month} value={month}>
+                          {formatKsaDate(month)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleConfirmMapMonth} className="self-end">
+                  Terapkan
+                </Button>
               </div>
-              <KecamatanMapDynamic geoJsonKecamatan={tasikmalayaGeoJson} geoJsonSawah={sawahGeoJson} dataFase={combinedTableData.data} selectedMonth={confirmedMapMonth} phaseColorMapping={getPhaseColor} />
+              <KecamatanMapDynamic
+                geoJsonKecamatan={tasikmalayaGeoJson}
+                geoJsonSawah={sawahGeoJson}
+                dataFase={combinedTableData.data}
+                selectedMonth={confirmedMapMonth}
+                phaseColorMapping={getPhaseColor}
+              />
             </CardContent>
           </Card>
         </>
