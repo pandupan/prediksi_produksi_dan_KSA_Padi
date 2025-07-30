@@ -1,6 +1,8 @@
 import AboutKsa from "@/components/pages/landing-page/AboutKsa";
 import Benefits from "@/components/pages/landing-page/Benefits";
 import Hero from "@/components/pages/landing-page/Hero";
+import MetodeKsa from "@/components/pages/landing-page/MetodeKsa";
+import SiklusTumbuhPadi from "@/components/pages/landing-page/Siklus-Tumbuh-Padi";
 
 export default function Home() {
   return (
@@ -11,6 +13,8 @@ export default function Home() {
       />
       <AboutKsa />
       <Benefits />
+      <MetodeKsa/>
+      <SiklusTumbuhPadi/>
     </main>
   );
 }

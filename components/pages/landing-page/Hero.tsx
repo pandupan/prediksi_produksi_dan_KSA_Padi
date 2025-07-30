@@ -79,7 +79,7 @@ const Hero: React.FC<HeroProps> = ({ heading, message }) => {
               variants={buttonVariants}
             >
               {/* Mengganti href ke ID yang ada di halaman, yaitu #visualisasi-interaktif */}
-              <Link href="#visualisasi-interaktif">Analisis Terbaru Kami</Link>
+              <Link href="/visualisasi-ksa">Analisis Terbaru Kami</Link>
             </motion.button>
           </div>
         </motion.div>
