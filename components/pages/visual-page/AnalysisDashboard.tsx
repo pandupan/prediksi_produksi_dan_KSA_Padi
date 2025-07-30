@@ -1,4 +1,4 @@
- /* eslint-disable react/no-unescaped-entities */
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -40,7 +40,7 @@ import {
   getPhaseColor, getNextMonthKey,
   generatePredictions, CustomTooltip,
   ExcelData, AggregatedData, PredictedData,
-  phaseToYValue, yValueToLabel, yAxisTicksNumeric 
+  phaseToYValue, yValueToLabel, yAxisTicksNumeric
 } from "@/lib/utils";
 
 // --- Pastikan KEDUA KOMPONEN PETA diimpor secara dinamis dengan ssr: false ---
@@ -134,10 +134,10 @@ const AnalysisDashboard = () => {
       const newRow: AggregatedData = { kecamatan: namaKecamatan };
       monthColumns.forEach((month) => {
         const cleanedPhases = kecamatanData.map((d: ExcelData) => {
-            let phaseValue = d[month];
-            if (typeof phaseValue === 'string') phaseValue = parseFloat(phaseValue);
-            if (phaseValue === 13 || phaseValue === 4.5) return 5.0;
-            return phaseValue;
+          let phaseValue = d[month];
+          if (typeof phaseValue === 'string') phaseValue = parseFloat(phaseValue);
+          if (phaseValue === 13 || phaseValue === 4.5) return 5.0;
+          return phaseValue;
         }).filter((v: any) => v != null);
         
         newRow[month] = getModus(cleanedPhases);
@@ -161,8 +161,8 @@ const AnalysisDashboard = () => {
         const futureMonths = [];
         let currentMonthKeyForPrediction = monthColumns.length > 0 ? monthColumns[monthColumns.length - 1] : "124"; 
         for(let i = 0; i < 12; i++) {
-            currentMonthKeyForPrediction = getNextMonthKey(currentMonthKeyForPrediction);
-            futureMonths.push(currentMonthKeyForPrediction);
+          currentMonthKeyForPrediction = getNextMonthKey(currentMonthKeyForPrediction);
+          futureMonths.push(currentMonthKeyForPrediction);
         }
         setPredictionColumns(["kecamatan", ...futureMonths]);
     }
@@ -375,6 +375,23 @@ const AnalysisDashboard = () => {
     setIsSelectOpenPrediksi(false);
   };
 
+  // --- FUNGSI BARU UNTUK SELECT/UNSELECT ALL ---
+  const handleSelectAll = (isPredictive: boolean) => {
+    if (isPredictive) {
+      setPendingSelectedKecamatanPrediksi([...allKecamatan]);
+    } else {
+      setPendingSelectedKecamatan([...allKecamatan]);
+    }
+  };
+
+  const handleUnselectAll = (isPredictive: boolean) => {
+    if (isPredictive) {
+      setPendingSelectedKecamatanPrediksi([]);
+    } else {
+      setPendingSelectedKecamatan([]);
+    }
+  };
+
   const lineColors = [
     "#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE",
     "#00C49F", "#FFBB28", "#FF8042", "#A4DE6C", "#D0ED57",
@@ -447,6 +464,24 @@ const AnalysisDashboard = () => {
                     <SelectValue placeholder="Pilih kecamatan..." />
                   </SelectTrigger>
                   <SelectContent className="max-h-60 overflow-y-auto">
+                    {/* --- BLOK SELECT/UNSELECT ALL --- */}
+                    <div className="flex justify-between p-2 border-b">
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-xs"
+                        onClick={() => handleSelectAll(false)}
+                      >
+                        Pilih Semua
+                      </Button>
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-xs text-destructive"
+                        onClick={() => handleUnselectAll(false)}
+                      >
+                        Hapus Pilihan
+                      </Button>
+                    </div>
+                    {/* --- AKHIR BLOK --- */}
                     {allKecamatan.map((kecamatan) => (
                       <div
                         key={kecamatan}
@@ -491,13 +526,14 @@ const AnalysisDashboard = () => {
                       fontSize={12}
                     />
                     <YAxis
-                        type="number"
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                        domain={yAxisDomain as [number, number]}
-                        ticks={yAxisTicksNumeric}
-                        tickFormatter={(value) => yValueToLabel[String(value)] || ""}
-                        interval={0}
+                      type="number"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      domain={yAxisDomain as [number, number]}
+                      ticks={yAxisTicksNumeric}
+                      tickFormatter={(value) => yValueToLabel[String(value)] || ""}
+                      interval={0}
+                      width={100} // <-- MODIFIKASI Y-AXIS
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
@@ -551,6 +587,24 @@ const AnalysisDashboard = () => {
                     <SelectValue placeholder="Pilih kecamatan..." />
                   </SelectTrigger>
                   <SelectContent className="max-h-60 overflow-y-auto">
+                    {/* --- BLOK SELECT/UNSELECT ALL --- */}
+                    <div className="flex justify-between p-2 border-b">
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-xs"
+                        onClick={() => handleSelectAll(true)}
+                      >
+                        Pilih Semua
+                      </Button>
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-xs text-destructive"
+                        onClick={() => handleUnselectAll(true)}
+                      >
+                        Hapus Pilihan
+                      </Button>
+                    </div>
+                    {/* --- AKHIR BLOK --- */}
                     {allKecamatan.map((kecamatan) => (
                       <div
                         key={kecamatan}
@@ -599,13 +653,14 @@ const AnalysisDashboard = () => {
                       fontSize={12}
                     />
                     <YAxis
-                        type="number"
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                        domain={yAxisDomain as [number, number]}
-                        ticks={yAxisTicksNumeric}
-                        tickFormatter={(value) => yValueToLabel[String(value)] || ""}
-                        interval={0}
+                      type="number"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      domain={yAxisDomain as [number, number]}
+                      ticks={yAxisTicksNumeric}
+                      tickFormatter={(value) => yValueToLabel[String(value)] || ""}
+                      interval={0}
+                      width={100} // <-- MODIFIKASI Y-AXIS
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
@@ -628,7 +683,7 @@ const AnalysisDashboard = () => {
             </CardContent>
           </Card>
           
-                    {/* Card: Peta Sebaran Fase Tanam (Per Kecamatan/Sawah) */}
+          {/* Card: Peta Sebaran Fase Tanam (Per Kecamatan/Sawah) */}
           <Card>
               <CardHeader>
                   <CardTitle className="flex items-center">
@@ -679,13 +734,13 @@ const AnalysisDashboard = () => {
                   />
               </CardContent>
           </Card>
-        
+      
           {/* Card: Peta Agregasi Fase Tanam Kota */}
           <Card>
               <CardHeader>
                   <CardTitle className="flex items-center">
                       <Globe className="w-5 h-5 mr-2" />
-                      Peta Fase Tanam Kota Dominan Kota Tasikmalay
+                      Peta Fase Tanam Kota Dominan Kota Tasikmalaya
                   </CardTitle>
                   <CardDescription>
                       Peta ini menampilkan fase tanam dominan untuk seluruh wilayah Kota Tasikmalaya

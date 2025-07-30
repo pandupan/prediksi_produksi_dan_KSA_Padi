@@ -19,7 +19,7 @@ const Header = () => {
 
   useEffect(() => {
     
-    if (pathname === "/" || pathname ==="/visualisasi-ksa") {
+    if (pathname === "/") {
       const changeColor = () => {
         if (window.scrollY >= 90) {
           setColor("#ffffff");

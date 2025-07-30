@@ -444,6 +444,23 @@ const InputFile = () => {
   const handlePendingKecamatanSelectPrediksi = (kecamatan: string) => setPendingSelectedKecamatanPrediksi((prev) => prev.includes(kecamatan) ? prev.filter((k) => k !== kecamatan) : [...prev, kecamatan]);
   const handleConfirmSelectionPrediksi = () => { setIsSelectOpenPrediksi(false); setConfirmedSelectedKecamatanPrediksi(pendingSelectedKecamatanPrediksi); };
 
+  // --- FUNGSI BARU UNTUK SELECT/UNSELECT ALL ---
+  const handleSelectAll = (isPredictive: boolean) => {
+    if (isPredictive) {
+      setPendingSelectedKecamatanPrediksi([...allKecamatan]);
+    } else {
+      setPendingSelectedKecamatan([...allKecamatan]);
+    }
+  };
+
+  const handleUnselectAll = (isPredictive: boolean) => {
+    if (isPredictive) {
+      setPendingSelectedKecamatanPrediksi([]);
+    } else {
+      setPendingSelectedKecamatan([]);
+    }
+  };
+
   const lineColors = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A4DE6C", "#D0ED57"];
 
   return (
@@ -483,7 +500,34 @@ const InputFile = () => {
                 <Label htmlFor="kecamatan-select">Pilih Kecamatan (Data Aktual)</Label>
                 <Select open={isSelectOpen} onOpenChange={setIsSelectOpen}>
                   <SelectTrigger id="kecamatan-select"><SelectValue placeholder="Pilih kecamatan..." /></SelectTrigger>
-                  <SelectContent className="max-h-60 overflow-y-auto">{allKecamatan.map((kecamatan) => (<div key={kecamatan} className="relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm" onMouseDown={(e) => e.preventDefault()} onClick={() => handlePendingKecamatanSelect(kecamatan)}><Checkbox id={`checkbox-${kecamatan}`} checked={pendingSelectedKecamatan.includes(kecamatan)} className="absolute left-2 top-1/2 -translate-y-1/2" /><Label htmlFor={`checkbox-${kecamatan}`} className="flex-1 cursor-pointer">{kecamatan}</Label></div>))}<div className="p-2 border-t"><Button onClick={handleConfirmSelection} className="w-full">Konfirmasi Pilihan</Button></div></SelectContent>
+                  <SelectContent className="max-h-60 overflow-y-auto">
+                    {/* --- BLOK SELECT/UNSELECT ALL --- */}
+                    <div className="flex justify-between p-2 border-b">
+                        <Button
+                          variant="link"
+                          className="p-0 h-auto text-xs"
+                          onClick={() => handleSelectAll(false)}
+                        >
+                          Pilih Semua
+                        </Button>
+                        <Button
+                          variant="link"
+                          className="p-0 h-auto text-xs text-destructive"
+                          onClick={() => handleUnselectAll(false)}
+                        >
+                          Hapus Pilihan
+                        </Button>
+                    </div>
+                    {allKecamatan.map((kecamatan) => (
+                      <div key={kecamatan} className="relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm" onMouseDown={(e) => e.preventDefault()} onClick={() => handlePendingKecamatanSelect(kecamatan)}>
+                        <Checkbox id={`checkbox-${kecamatan}`} checked={pendingSelectedKecamatan.includes(kecamatan)} className="absolute left-2 top-1/2 -translate-y-1/2" />
+                        <Label htmlFor={`checkbox-${kecamatan}`} className="flex-1 cursor-pointer">{kecamatan}</Label>
+                      </div>
+                    ))}
+                    <div className="p-2 border-t">
+                      <Button onClick={handleConfirmSelection} className="w-full">Konfirmasi Pilihan</Button>
+                    </div>
+                  </SelectContent>
                 </Select>
               </div>
               <div className="h-[400px] w-full relative">
@@ -491,7 +535,7 @@ const InputFile = () => {
                   <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} domain={yAxisDomain as [number, number]} ticks={yAxisTicksNumeric} tickFormatter={(value) => yValueToLabel[String(value)] || ""} interval={0} />
+                    <YAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} domain={yAxisDomain as [number, number]} ticks={yAxisTicksNumeric} tickFormatter={(value) => yValueToLabel[String(value)] || ""} interval={0} width={100} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
                     {confirmedSelectedKecamatan.map((kecamatan, index) => (<Line key={kecamatan} type="monotone" dataKey={kecamatan} stroke={lineColors[index % lineColors.length]} strokeWidth={2} activeDot={{ r: 6 }} connectNulls />))}
@@ -511,7 +555,34 @@ const InputFile = () => {
                 <Label htmlFor="kecamatan-select-prediksi">Pilih Kecamatan (Data Prediksi)</Label>
                 <Select open={isSelectOpenPrediksi} onOpenChange={setIsSelectOpenPrediksi}>
                   <SelectTrigger id="kecamatan-select-prediksi"><SelectValue placeholder="Pilih kecamatan..." /></SelectTrigger>
-                  <SelectContent className="max-h-60 overflow-y-auto">{allKecamatan.map((kecamatan) => (<div key={kecamatan} className="relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm" onMouseDown={(e) => e.preventDefault()} onClick={() => handlePendingKecamatanSelectPrediksi(kecamatan)}><Checkbox id={`checkbox-prediksi-${kecamatan}`} checked={pendingSelectedKecamatanPrediksi.includes(kecamatan)} className="absolute left-2 top-1/2 -translate-y-1/2" /><Label htmlFor={`checkbox-prediksi-${kecamatan}`} className="flex-1 cursor-pointer">{kecamatan}</Label></div>))}<div className="p-2 border-t"><Button onClick={handleConfirmSelectionPrediksi} className="w-full">Konfirmasi Pilihan</Button></div></SelectContent>
+                  <SelectContent className="max-h-60 overflow-y-auto">
+                    {/* --- BLOK SELECT/UNSELECT ALL --- */}
+                    <div className="flex justify-between p-2 border-b">
+                        <Button
+                          variant="link"
+                          className="p-0 h-auto text-xs"
+                          onClick={() => handleSelectAll(true)}
+                        >
+                          Pilih Semua
+                        </Button>
+                        <Button
+                          variant="link"
+                          className="p-0 h-auto text-xs text-destructive"
+                          onClick={() => handleUnselectAll(true)}
+                        >
+                          Hapus Pilihan
+                        </Button>
+                    </div>
+                    {allKecamatan.map((kecamatan) => (
+                      <div key={kecamatan} className="relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm" onMouseDown={(e) => e.preventDefault()} onClick={() => handlePendingKecamatanSelectPrediksi(kecamatan)}>
+                        <Checkbox id={`checkbox-prediksi-${kecamatan}`} checked={pendingSelectedKecamatanPrediksi.includes(kecamatan)} className="absolute left-2 top-1/2 -translate-y-1/2" />
+                        <Label htmlFor={`checkbox-prediksi-${kecamatan}`} className="flex-1 cursor-pointer">{kecamatan}</Label>
+                      </div>
+                    ))}
+                    <div className="p-2 border-t">
+                      <Button onClick={handleConfirmSelectionPrediksi} className="w-full">Konfirmasi Pilihan</Button>
+                    </div>
+                  </SelectContent>
                 </Select>
               </div>
               <div className="h-[400px] w-full relative">
@@ -519,7 +590,7 @@ const InputFile = () => {
                   <LineChart data={predictedChartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} domain={yAxisDomain as [number, number]} ticks={yAxisTicksNumeric} tickFormatter={(value) => yValueToLabel[String(value)] || ""} interval={0} />
+                    <YAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} domain={yAxisDomain as [number, number]} ticks={yAxisTicksNumeric} tickFormatter={(value) => yValueToLabel[String(value)] || ""} interval={0} width={100} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
                     {confirmedSelectedKecamatanPrediksi.map((kecamatan, index) => (<Line key={kecamatan} type="monotone" dataKey={kecamatan} stroke={lineColors[index % lineColors.length]} strokeWidth={2} activeDot={{ r: 6 }} connectNulls />))}
