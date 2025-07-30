@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Prediksi KSA & Produksi Padi",
+  title: "Prediksi KSA & Luas Panen Padi",
   description: "by BPS Kota Tasikmalaya",
 };
 

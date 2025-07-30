@@ -388,31 +388,34 @@ const InputFile = () => {
 
           <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle>Bingung dengan format file?</CardTitle>
+              <CardTitle className="text-3xl font-bold">Bingung dengan format file?</CardTitle>
               <CardDescription>
                 Berikut adalah panduan pengisian untuk setiap kolom pada file
                 template.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Accordion type="single" collapsible className="w-full space-y-2">
+<Accordion type="single" collapsible className="w-full space-y-2">
                 <AccordionStep
                   value="item-1"
                   label="Langkah 1: Kolom 'id segmen' dan 'subsegmen'"
-                  description="Dua kolom pertama ini adalah kunci identifikasi. 'id segmen' adalah kode wilayah 7-digit unik dari BPS yang menandakan lokasi segmen sawah. 'subsegmen' adalah pembagian lebih kecil di dalam segmen tersebut. Pastikan kedua kolom ini ada dan terisi dengan benar untuk setiap baris data."
-                  imageUrl="https://freeimghost.net/images/2025/07/30/Group-858.png"
+                  description="Kolom 2 berisi 'subsegmen' untuk kode setiap wilayah kecamatan di kota Tasikmalaya. Penulisan kode id_segmen menggunakan kode provinsi (32) diikuti kode kota (78) dan kode kecamatan (010).
+Contoh : 327801004"
+                  imageUrl="https://freeimghost.net/images/2025/07/30/Group-861.png"
                 />
                 <AccordionStep
                   value="item-2"
                   label="Langkah 2: Kolom Data Bulanan (Contoh: 124, 224)"
-                  description="Setiap kolom setelah 'subsegmen' mewakili satu periode observasi bulanan. Penamaannya menggunakan format numerik 'BTT' atau 'BBTT' (Bulan dan Tahun). Contoh: '124' untuk Januari 2024, '1124' untuk November 2024. Format ini penting untuk pemrosesan data secara kronologis."
-                  imageUrl="https://freeimghost.net/images/2025/07/29/8db38a67-efe4-4757-a5ba-413d8b8ecb31.png"
+                  description="Kolom 2 berisi 'subsegmen' untuk menunjukkan penempatan kotak didalam segmen.
+Contoh : Kode A2 menunjukkan titik kotak koordinat mana yang sedang diamati."
+                  imageUrl="https://freeimghost.net/images/2025/07/30/Group-860.png"
                 />
                 <AccordionStep
                   value="item-3"
                   label="Langkah 3: Pengisian Data Fase Tanam"
-                  description="Isi setiap sel pada kolom bulan dengan kode numerik yang sesuai dengan fase pertumbuhan padi. Misalnya, '1' untuk Vegetatif 1, '2' untuk Vegetatif 2, '3.1' untuk Generatif 1, '5' untuk Panen, dan '13' untuk Bero/Pasca Panen. Data yang kosong akan diabaikan, jadi pastikan setiap observasi terisi."
-                  imageUrl="https://freeimghost.net/images/2025/07/29/8db38a67-efe4-4757-a5ba-413d8b8ecb31.png"
+                  description="Kolom 3 berisi kode bulan dan tahun untuk menandakan hasil amatan dari setiap bulan dan tahun yang dilakukan.
+Contoh : 124 menunjukkan bulan Januari dan 2024 "
+                  imageUrl="https://freeimghost.net/images/2025/07/30/Group-859.png"
                 />
               </Accordion>
             </CardContent>
