@@ -753,8 +753,7 @@ const InputFile = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
                   <a
-                    href="https://raw.githubusercontent.com/pandupan/material_source_magang_bps_tasikmalaya/main/template_ksa_tasik.xlsx"
-                    download="template_ksa_tasik.xlsx"
+                    href="https://github.com/pandupan/material_source_magang_bps_tasikmalaya/blob/main/dataset_ksa_tasik_2025_v9.xlsx"
                   >
                     <Button
                       variant="outline"

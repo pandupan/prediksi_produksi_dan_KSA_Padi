@@ -67,7 +67,7 @@ const MetodeKsa = () => {
               <Image
                 // Pastikan URL gambar ini dapat diakses secara publik. 
                 // Anda bisa mengunggahnya ke layanan seperti Imgur, Vercel Blob, atau menyimpannya di folder /public.
-                src="https://freeimghost.net/images/2025/07/29/metode_ksa.png" 
+                src="https://freeimghost.net/images/2025/07/31/Group-863-min.png" 
                 alt="Diagram Metode KSA"
                 layout="fill"
                 objectFit="contain"

@@ -1,4 +1,5 @@
 import AboutKsa from "@/components/pages/landing-page/AboutKsa";
+import Algoritma from "@/components/pages/landing-page/Algoritma";
 import Benefits from "@/components/pages/landing-page/Benefits";
 import Hero from "@/components/pages/landing-page/Hero";
 import MetodeKsa from "@/components/pages/landing-page/MetodeKsa";
@@ -14,6 +15,7 @@ export default function Home() {
       <AboutKsa />
       <Benefits />
       <MetodeKsa/>
+      <Algoritma/>
       <SiklusTumbuhPadi/>
     </main>
   );

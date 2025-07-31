@@ -25,8 +25,8 @@ export default function Page() {
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-800 dark:text-white leading-tight">
-              Pantau <span className="text-green-600">Tanam Padi</span> &<br />
-              Prediksi <span className="text-yellow-500">Hasil Panen</span>
+              Pantau <span className="text-green-600">Fase Tanam</span> &<br />
+              Prediksi <span className="text-yellow-500">Luas Panen</span>
             </h1>
             <p className="mt-4 text-base md:text-lg text-slate-600 dark:text-slate-300 max-w-lg">
               Data terbaru luas panen & harga beras di Tasikmalaya, plus prediksi
