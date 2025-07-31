@@ -103,9 +103,6 @@ export const getPhaseColor = (phase: number | null): string => {
   }
 };
 
-// --- PERBAIKAN UNTUK JARAK Y-AXIS YANG SAMA ---
-
-// Urutan tampilan dari bawah ke atas di chart
 export const displayOrder = [
   1.0,   // Vegetatif 1
   2.0,   // Vegetatif 2
@@ -152,35 +149,41 @@ export const getNextMonthKey = (monthKey: string): string => {
   return `${month + 1}${year}`;
 };
 
-// 5. Perbarui CustomTooltip agar menggunakan map yang baru
 export const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <Card className="p-2 text-sm shadow-lg">
-        <CardHeader className="p-1 font-bold border-b mb-1">
-          {typeof label === "string" || typeof label === "number"
-            ? formatKsaDate(String(label))
-            : String(label)}
-        </CardHeader>
-        <CardContent className="p-1">
-          {payload.map((pld: Payload<ValueType, NameType>) => (
-            <div key={pld.dataKey as React.Key} className="flex items-center">
-              <div
-                style={{ backgroundColor: pld.color as string }}
-                className="w-2.5 h-2.5 rounded-full mr-2 shrink-0"
-              ></div>
-              <span className="flex-1 truncate">{pld.dataKey as string}: </span>
-              <span className="font-semibold ml-2">
-                {yValueToLabel[String(pld.value)] || 'N/A'}
-              </span>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    );
-  }
-  return null;
-};
+    if (active && payload && payload.length) {
+      return (
+        <Card className="p-2 text-sm shadow-lg">
+          <CardHeader className="p-1 font-bold border-b mb-1">
+            {typeof label === "string" || typeof label === "number"
+              ? formatKsaDate(String(label))
+              : String(label)}
+          </CardHeader>
+          <CardContent className="p-1">
+            {payload.map((pld: Payload<ValueType, NameType>) => {
+              const roundedValue = pld.value !== null && pld.value !== undefined 
+                  ? Math.round(pld.value as number) 
+                  : null;
+              
+              return (
+                <div key={pld.dataKey as React.Key} className="flex items-center">
+                  <div
+                    style={{ backgroundColor: pld.color as string }}
+                    className="w-2.5 h-2.5 rounded-full mr-2 shrink-0"
+                  ></div>
+                  <span className="flex-1 truncate">{pld.dataKey as string}: </span>
+                  <span className="font-semibold ml-2">
+                    {roundedValue !== null ? (yValueToLabel[String(roundedValue)] || 'N/A') : 'N/A'}
+                  </span>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      );
+    }
+    return null;
+  };
+  
 
 export const generatePredictions = (
   aggData: AggregatedData[],

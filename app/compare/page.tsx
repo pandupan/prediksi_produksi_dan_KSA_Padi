@@ -112,7 +112,7 @@ function InsightCards() {
 
   const items = [
     {
-      label: 'Luas Panen 2025',
+      label: 'Luas Panen Puncak 2025',
       value: `${stats.luasPanen.toLocaleString('id')} Ha`,
       icon: BarChart3,
       color: 'text-blue-500',
@@ -192,7 +192,7 @@ function LuasPanenInsight() {
   }, []);
 
   return (
-    <section className="max-w-5xl mx-auto mt-10 mb-6">
+    <section className="max-w-6xl mx-auto mt-10 mb-6">
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 md:p-8">
         <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
           <TrendingUp className="text-green-500" size={28} />

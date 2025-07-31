@@ -296,42 +296,97 @@ const AnalysisDashboard = () => {
     }
   }, [aggregatedColumns, combinedTableData.columns, confirmedMapMonth]);
 
-  // Domain Y-axis berdasarkan jumlah fase
   const yAxisDomain = useMemo(() => {
     const tickCount = yAxisTicksNumeric.length;
-    // Domain dari -0.5 sampai (jumlah tick - 0.5) untuk memberi padding
     return [-0.5, tickCount - 0.5];
   }, []);
-
+  
   const chartData = useMemo(() => {
     if (!aggregatedData || confirmedSelectedKecamatan.length === 0) return [];
+
     const monthColumns = aggregatedColumns.filter((c) => c !== "kecamatan");
+    const JITTER_AMOUNT = 0.15; 
+
     return monthColumns.map((month) => {
       const dataPoint: any = { name: formatKsaDate(month, true) };
+      const valueCounts: { [key: number]: string[] } = {};
+
       aggregatedData.forEach((row) => {
         if (confirmedSelectedKecamatan.includes(row.kecamatan)) {
           const originalPhase = parseFloat(row[month]);
-          // Gunakan map untuk mendapatkan nilai Y baru
-          dataPoint[row.kecamatan] = phaseToYValue[String(originalPhase)] ?? null;
+          const yValue = phaseToYValue[String(originalPhase)] ?? null;
+          dataPoint[row.kecamatan] = yValue;
+
+          if (yValue !== null) {
+            if (!valueCounts[yValue]) {
+              valueCounts[yValue] = [];
+            }
+            valueCounts[yValue].push(row.kecamatan);
+          }
         }
       });
+
+      for (const yValue in valueCounts) {
+        const overlappingKecamatan = valueCounts[yValue];
+        const totalOverlaps = overlappingKecamatan.length;
+
+        if (totalOverlaps > 1) {
+          const startOffset = -JITTER_AMOUNT * (totalOverlaps - 1) / 2;
+          
+          overlappingKecamatan.forEach((kecamatanName, index) => {
+            const jitter = startOffset + index * JITTER_AMOUNT;
+            if(dataPoint[kecamatanName] !== null) {
+                dataPoint[kecamatanName] += jitter;
+            }
+          });
+        }
+      }
+
       return dataPoint;
     });
   }, [aggregatedData, aggregatedColumns, confirmedSelectedKecamatan]);
 
   const predictedChartData = useMemo(() => {
-    if (!predictedData || confirmedSelectedKecamatanPrediksi.length === 0)
-      return [];
+    if (!predictedData || confirmedSelectedKecamatanPrediksi.length === 0) return [];
+
     const monthColumns = predictionColumns.filter((c) => c !== "kecamatan");
+    const JITTER_AMOUNT = 0.15;
+
     return monthColumns.map((month) => {
       const dataPoint: any = { name: formatKsaDate(month, true) };
+      const valueCounts: { [key: number]: string[] } = {};
+
       predictedData.forEach((row) => {
         if (confirmedSelectedKecamatanPrediksi.includes(row.kecamatan)) {
           const originalPhase = parseFloat(row[month]);
-          // Gunakan map untuk mendapatkan nilai Y baru
-          dataPoint[row.kecamatan] = phaseToYValue[String(originalPhase)] ?? null;
+          const yValue = phaseToYValue[String(originalPhase)] ?? null;
+          dataPoint[row.kecamatan] = yValue;
+
+          if (yValue !== null) {
+            if (!valueCounts[yValue]) {
+              valueCounts[yValue] = [];
+            }
+            valueCounts[yValue].push(row.kecamatan);
+          }
         }
       });
+
+      for (const yValue in valueCounts) {
+        const overlappingKecamatan = valueCounts[yValue];
+        const totalOverlaps = overlappingKecamatan.length;
+
+        if (totalOverlaps > 1) {
+          const startOffset = -JITTER_AMOUNT * (totalOverlaps - 1) / 2;
+          
+          overlappingKecamatan.forEach((kecamatanName, index) => {
+            const jitter = startOffset + index * JITTER_AMOUNT;
+             if(dataPoint[kecamatanName] !== null) {
+                dataPoint[kecamatanName] += jitter;
+            }
+          });
+        }
+      }
+
       return dataPoint;
     });
   }, [predictedData, predictionColumns, confirmedSelectedKecamatanPrediksi]);
@@ -375,7 +430,6 @@ const AnalysisDashboard = () => {
     setIsSelectOpenPrediksi(false);
   };
 
-  // --- FUNGSI BARU UNTUK SELECT/UNSELECT ALL ---
   const handleSelectAll = (isPredictive: boolean) => {
     if (isPredictive) {
       setPendingSelectedKecamatanPrediksi([...allKecamatan]);
@@ -464,7 +518,6 @@ const AnalysisDashboard = () => {
                     <SelectValue placeholder="Pilih kecamatan..." />
                   </SelectTrigger>
                   <SelectContent className="max-h-60 overflow-y-auto">
-                    {/* --- BLOK SELECT/UNSELECT ALL --- */}
                     <div className="flex justify-between p-2 border-b">
                       <Button
                         variant="link"
@@ -481,7 +534,6 @@ const AnalysisDashboard = () => {
                         Hapus Pilihan
                       </Button>
                     </div>
-                    {/* --- AKHIR BLOK --- */}
                     {allKecamatan.map((kecamatan) => (
                       <div
                         key={kecamatan}
@@ -531,9 +583,9 @@ const AnalysisDashboard = () => {
                       fontSize={12}
                       domain={yAxisDomain as [number, number]}
                       ticks={yAxisTicksNumeric}
-                      tickFormatter={(value) => yValueToLabel[String(value)] || ""}
+                      tickFormatter={(value) => yValueToLabel[String(Math.round(value))] || ""}
                       interval={0}
-                      width={100} // <-- MODIFIKASI Y-AXIS
+                      width={100}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
@@ -545,7 +597,7 @@ const AnalysisDashboard = () => {
                         stroke={lineColors[index % lineColors.length]}
                         strokeWidth={2}
                         activeDot={{ r: 6 }}
-                        connectNulls // Menghubungkan titik null untuk kontinuitas
+                        connectNulls
                       />
                     ))}
                   </LineChart>
@@ -587,7 +639,6 @@ const AnalysisDashboard = () => {
                     <SelectValue placeholder="Pilih kecamatan..." />
                   </SelectTrigger>
                   <SelectContent className="max-h-60 overflow-y-auto">
-                    {/* --- BLOK SELECT/UNSELECT ALL --- */}
                     <div className="flex justify-between p-2 border-b">
                       <Button
                         variant="link"
@@ -604,7 +655,6 @@ const AnalysisDashboard = () => {
                         Hapus Pilihan
                       </Button>
                     </div>
-                    {/* --- AKHIR BLOK --- */}
                     {allKecamatan.map((kecamatan) => (
                       <div
                         key={kecamatan}
@@ -658,9 +708,9 @@ const AnalysisDashboard = () => {
                       fontSize={12}
                       domain={yAxisDomain as [number, number]}
                       ticks={yAxisTicksNumeric}
-                      tickFormatter={(value) => yValueToLabel[String(value)] || ""}
+                      tickFormatter={(value) => yValueToLabel[String(Math.round(value))] || ""}
                       interval={0}
-                      width={100} // <-- MODIFIKASI Y-AXIS
+                      width={100}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
@@ -683,7 +733,6 @@ const AnalysisDashboard = () => {
             </CardContent>
           </Card>
           
-          {/* Card: Peta Sebaran Fase Tanam (Per Kecamatan/Sawah) */}
           <Card>
               <CardHeader>
                   <CardTitle className="flex items-center">
@@ -735,12 +784,11 @@ const AnalysisDashboard = () => {
               </CardContent>
           </Card>
       
-          {/* Card: Peta Agregasi Fase Tanam Kota */}
           <Card>
               <CardHeader>
                   <CardTitle className="flex items-center">
                       <Globe className="w-5 h-5 mr-2" />
-                      Peta Fase Tanam Kota Dominan Kota Tasikmalaya
+                      Peta Fase Tanam Dominan Kota Tasikmalaya
                   </CardTitle>
                   <CardDescription>
                       Peta ini menampilkan fase tanam dominan untuk seluruh wilayah Kota Tasikmalaya
@@ -785,7 +833,6 @@ const AnalysisDashboard = () => {
                   />
               </CardContent>
           </Card>
-
         </>
       )}
     </section>
