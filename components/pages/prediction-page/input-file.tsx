@@ -164,6 +164,21 @@ const kecamatanMap: { [key: string]: string } = {
   "3278020": "Tamansari",
   "3278040": "Tawang",
 };
+
+// --- KODE BARU: Definisikan urutan kecamatan yang diinginkan ---
+const customKecamatanOrder = [
+  "Kawalu",
+  "Tamansari",
+  "Cibeureum",
+  "Purbaratu",
+  "Tawang",
+  "Cihideung",
+  "Mangkubumi",
+  "Indihiang",
+  "Bungursari",
+  "Cipedes",
+];
+
 const getModus = (arr: any[]): any => {
   if (!arr.length) return null;
   const freqMap: { [key: string]: number } = {};
@@ -394,7 +409,19 @@ const InputFile = () => {
       });
       result.push(newRow);
     }
-    result.sort((a, b) => a.kecamatan.localeCompare(b.kecamatan));
+    
+    // --- KODE LAMA (DIHAPUS ATAU DIKOMENTARI) ---
+    // result.sort((a, b) => a.kecamatan.localeCompare(b.kecamatan));
+
+    // --- KODE BARU: Gunakan urutan kustom untuk mengurutkan data ---
+    result.sort((a, b) => {
+      const indexA = customKecamatanOrder.indexOf(a.kecamatan);
+      const indexB = customKecamatanOrder.indexOf(b.kecamatan);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    });
+
     setAggregatedData(result);
     const aggCols = ["kecamatan", ...monthColumns];
     setAggregatedColumns(aggCols);

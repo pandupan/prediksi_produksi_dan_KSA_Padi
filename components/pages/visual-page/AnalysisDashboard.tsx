@@ -78,6 +78,7 @@ import {
   phaseToYValue,
   yValueToLabel,
   yAxisTicksNumeric,
+  sortDataByKecamatan, // <-- Impor fungsi baru
 } from "@/lib/utils";
 
 // --- Pastikan KEDUA KOMPONEN PETA diimpor secara dinamis dengan ssr: false ---
@@ -185,7 +186,8 @@ const AnalysisDashboard = () => {
       });
       result.push(newRow);
     }
-    result.sort((a, b) => a.kecamatan.localeCompare(b.kecamatan));
+    
+    sortDataByKecamatan(result); // <-- Gunakan fungsi baru
     setAggregatedData(result);
     const aggCols = ["kecamatan", ...monthColumns];
     setAggregatedColumns(aggCols);
@@ -302,7 +304,7 @@ const AnalysisDashboard = () => {
     }
 
     const combinedResultData = Array.from(combinedDataMap.values());
-    combinedResultData.sort((a, b) => a.kecamatan.localeCompare(b.kecamatan));
+    sortDataByKecamatan(combinedResultData); // <-- Gunakan fungsi baru
 
     const allMonthsSet = new Set<string>();
     if (aggregatedColumns.length > 1) {

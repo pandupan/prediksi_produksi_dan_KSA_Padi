@@ -161,8 +161,8 @@ export const CustomTooltip = ({ active, payload, label }: any) => {
           <CardContent className="p-1">
             {payload.map((pld: Payload<ValueType, NameType>) => {
               const roundedValue = pld.value !== null && pld.value !== undefined 
-                  ? Math.round(pld.value as number) 
-                  : null;
+                ? Math.round(pld.value as number) 
+                : null;
               
               return (
                 <div key={pld.dataKey as React.Key} className="flex items-center">
@@ -236,4 +236,25 @@ export const generatePredictions = (
     predictions.push(newRow);
   });
   return { predictions, columns: newColumns };
+};
+
+// --- KODE BARU YANG DITAMBAHKAN ---
+
+// Definisikan urutan kecamatan yang Anda inginkan
+export const customKecamatanOrder = [
+  "Kawalu", "Tamansari", "Cibeureum", "Purbaratu", "Tawang",
+  "Cihideung", "Mangkubumi", "Indihiang", "Bungursari", "Cipedes"
+];
+
+// Buat fungsi untuk mengurutkan data berdasarkan urutan di atas
+export const sortDataByKecamatan = (data: { kecamatan: string }[]) => {
+  // .sort() akan mengubah array aslinya secara langsung (in-place)
+  data.sort((a, b) => {
+    const indexA = customKecamatanOrder.indexOf(a.kecamatan);
+    const indexB = customKecamatanOrder.indexOf(b.kecamatan);
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    return indexA - indexB;
+  });
+  return data;
 };

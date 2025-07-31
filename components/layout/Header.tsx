@@ -76,10 +76,10 @@ const Header = () => {
             <Link href="/#about-ksa">Beranda</Link>
           </li>
           <li className="p-2 hover:text-green-600 transition-colors duration-200">
-            <Link href="/visualisasi-ksa">Visualisasi</Link>
+            <Link href="/visualisasi-ksa">Fase Tanam</Link>
           </li>
           <li className="p-2 hover:text-green-600 transition-colors duration-200">
-            <Link href="/compare">Komparasi</Link>
+            <Link href="/compare">Luas Panen & Harga Beras</Link>
           </li>
           <li className="p-2">
             <Link href="/prediction">
@@ -110,10 +110,10 @@ const Header = () => {
               <Link href="/#about-ksa">Beranda</Link>
             </li>
             <li onClick={handleNav}>
-              <Link href="/visualisasi-ksa">Visualiasi</Link>
+              <Link href="/visualisasi-ksa">Fase Tanam</Link>
             </li>
             <li onClick={handleNav}>
-              <Link href="/compare">Komparasi</Link>
+              <Link href="/compare">Luas Panen & Harga Beras</Link>
             </li>
             <li onClick={handleNav}>
               <Link href="/prediction">Coba Sekarang</Link>
