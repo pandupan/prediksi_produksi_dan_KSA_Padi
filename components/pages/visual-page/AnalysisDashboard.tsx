@@ -7,27 +7,55 @@ import React, { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import * as XLSX from "xlsx";
 import {
-  Card, CardHeader, CardTitle, CardDescription, CardContent,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
 } from "@/components/ui/card";
 import {
-  Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
 } from "@/components/ui/table";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
-  Loader2, AlertCircle, BarChart3, LineChart as LineChartIcon,
-  MapPin, File as FileIcon, Info, Globe,
+  Loader2,
+  AlertCircle,
+  BarChart3,
+  LineChart as LineChartIcon,
+  MapPin,
+  File as FileIcon,
+  Info,
+  Globe,
 } from "lucide-react";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from "recharts";
 import {
-  ValueType, NameType, Payload,
+  ValueType,
+  NameType,
+  Payload,
 } from "recharts/types/component/DefaultTooltipContent";
 
 // --- Import Data GeoJSON ---
@@ -36,11 +64,20 @@ import { sawahGeoJson } from "@/lib/bpn-sawah-geojson";
 
 // --- Import semua helper functions dan interfaces dari file utils.tsx ---
 import {
-  formatKsaDate, kecamatanMap, getModus, validateStructure,
-  getPhaseColor, getNextMonthKey,
-  generatePredictions, CustomTooltip,
-  ExcelData, AggregatedData, PredictedData,
-  phaseToYValue, yValueToLabel, yAxisTicksNumeric
+  formatKsaDate,
+  kecamatanMap,
+  getModus,
+  validateStructure,
+  getPhaseColor,
+  getNextMonthKey,
+  generatePredictions,
+  CustomTooltip,
+  ExcelData,
+  AggregatedData,
+  PredictedData,
+  phaseToYValue,
+  yValueToLabel,
+  yAxisTicksNumeric,
 } from "@/lib/utils";
 
 // --- Pastikan KEDUA KOMPONEN PETA diimpor secara dinamis dengan ssr: false ---
@@ -63,7 +100,6 @@ const TasikCityMap = dynamic(() => import("@/components/TasikCityMap"), {
     </div>
   ),
 });
-
 
 const AnalysisDashboard = () => {
   const [data, setData] = useState<ExcelData[] | null>(null);
@@ -106,7 +142,9 @@ const AnalysisDashboard = () => {
       (c) => c.toLowerCase().trim() === "subsegmen"
     );
     if (!idSegmenKey || !subsegmenKey) {
-      setError("Struktur file tidak sesuai. Kolom 'id segmen' atau 'subsegmen' tidak ditemukan.");
+      setError(
+        "Struktur file tidak sesuai. Kolom 'id segmen' atau 'subsegmen' tidak ditemukan."
+      );
       return;
     }
 
@@ -133,13 +171,16 @@ const AnalysisDashboard = () => {
       const kecamatanData = groupedByKecamatan[namaKecamatan];
       const newRow: AggregatedData = { kecamatan: namaKecamatan };
       monthColumns.forEach((month) => {
-        const cleanedPhases = kecamatanData.map((d: ExcelData) => {
-          let phaseValue = d[month];
-          if (typeof phaseValue === 'string') phaseValue = parseFloat(phaseValue);
-          if (phaseValue === 13 || phaseValue === 4.5) return 5.0;
-          return phaseValue;
-        }).filter((v: any) => v != null);
-        
+        const cleanedPhases = kecamatanData
+          .map((d: ExcelData) => {
+            let phaseValue = d[month];
+            if (typeof phaseValue === "string")
+              phaseValue = parseFloat(phaseValue);
+            if (phaseValue === 13 || phaseValue === 4.5) return 5.0;
+            return phaseValue;
+          })
+          .filter((v: any) => v != null);
+
         newRow[month] = getModus(cleanedPhases);
       });
       result.push(newRow);
@@ -148,8 +189,8 @@ const AnalysisDashboard = () => {
     setAggregatedData(result);
     const aggCols = ["kecamatan", ...monthColumns];
     setAggregatedColumns(aggCols);
-    
-    if (aggCols.length > 1) { 
+
+    if (aggCols.length > 1) {
       const { predictions: preds, columns: predCols } = generatePredictions(
         result,
         aggCols
@@ -157,20 +198,23 @@ const AnalysisDashboard = () => {
       setPredictedData(preds);
       setPredictionColumns(predCols);
     } else {
-        setPredictedData([]);
-        const futureMonths = [];
-        let currentMonthKeyForPrediction = monthColumns.length > 0 ? monthColumns[monthColumns.length - 1] : "124"; 
-        for(let i = 0; i < 12; i++) {
-          currentMonthKeyForPrediction = getNextMonthKey(currentMonthKeyForPrediction);
-          futureMonths.push(currentMonthKeyForPrediction);
-        }
-        setPredictionColumns(["kecamatan", ...futureMonths]);
+      setPredictedData([]);
+      const futureMonths = [];
+      let currentMonthKeyForPrediction =
+        monthColumns.length > 0 ? monthColumns[monthColumns.length - 1] : "124";
+      for (let i = 0; i < 12; i++) {
+        currentMonthKeyForPrediction = getNextMonthKey(
+          currentMonthKeyForPrediction
+        );
+        futureMonths.push(currentMonthKeyForPrediction);
+      }
+      setPredictionColumns(["kecamatan", ...futureMonths]);
     }
 
     const kecamatanList = result.map((d) => d.kecamatan);
     setAllKecamatan(kecamatanList);
   };
-  
+
   useEffect(() => {
     const DATA_URL =
       "https://raw.githubusercontent.com/pandupan/material_source_magang_bps_tasikmalaya/main/dataset_ksa_tasik_2025_v9.xlsx";
@@ -239,48 +283,49 @@ const AnalysisDashboard = () => {
 
   const combinedTableData = useMemo(() => {
     if (!aggregatedData && !predictedData) return { data: [], columns: [] };
-    
+
     const combinedDataMap = new Map<string, AggregatedData | PredictedData>();
 
     if (aggregatedData) {
-        aggregatedData.forEach(row => {
-            combinedDataMap.set(row.kecamatan, { ...row });
-        });
+      aggregatedData.forEach((row) => {
+        combinedDataMap.set(row.kecamatan, { ...row });
+      });
     }
 
     if (predictedData) {
-        predictedData.forEach(row => {
-            const existingRow = combinedDataMap.get(row.kecamatan) || { kecamatan: row.kecamatan };
-            combinedDataMap.set(row.kecamatan, { ...existingRow, ...row });
-        });
+      predictedData.forEach((row) => {
+        const existingRow = combinedDataMap.get(row.kecamatan) || {
+          kecamatan: row.kecamatan,
+        };
+        combinedDataMap.set(row.kecamatan, { ...existingRow, ...row });
+      });
     }
-    
+
     const combinedResultData = Array.from(combinedDataMap.values());
     combinedResultData.sort((a, b) => a.kecamatan.localeCompare(b.kecamatan));
 
     const allMonthsSet = new Set<string>();
     if (aggregatedColumns.length > 1) {
-        aggregatedColumns.slice(1).forEach(col => allMonthsSet.add(col));
+      aggregatedColumns.slice(1).forEach((col) => allMonthsSet.add(col));
     }
     if (predictionColumns.length > 1) {
-        predictionColumns.slice(1).forEach(col => allMonthsSet.add(col));
+      predictionColumns.slice(1).forEach((col) => allMonthsSet.add(col));
     }
 
     const sortedAllMonths = Array.from(allMonthsSet).sort((a, b) => {
-        const monthA = parseInt(String(a).slice(0, -2));
-        const yearA = parseInt(String(a).slice(-2));
-        const monthB = parseInt(String(b).slice(0, -2));
-        const yearB = parseInt(String(b).slice(-2));
-        
-        if (yearA !== yearB) return yearA - yearB;
-        return monthA - monthB;
+      const monthA = parseInt(String(a).slice(0, -2));
+      const yearA = parseInt(String(a).slice(-2));
+      const monthB = parseInt(String(b).slice(0, -2));
+      const yearB = parseInt(String(b).slice(-2));
+
+      if (yearA !== yearB) return yearA - yearB;
+      return monthA - monthB;
     });
 
     const finalCombinedColumns = ["kecamatan", ...sortedAllMonths];
 
     return { data: combinedResultData, columns: finalCombinedColumns };
   }, [aggregatedData, predictedData, aggregatedColumns, predictionColumns]);
-
 
   useEffect(() => {
     if (combinedTableData.columns.length > 0 && !confirmedMapMonth) {
@@ -300,12 +345,12 @@ const AnalysisDashboard = () => {
     const tickCount = yAxisTicksNumeric.length;
     return [-0.5, tickCount - 0.5];
   }, []);
-  
+
   const chartData = useMemo(() => {
     if (!aggregatedData || confirmedSelectedKecamatan.length === 0) return [];
 
     const monthColumns = aggregatedColumns.filter((c) => c !== "kecamatan");
-    const JITTER_AMOUNT = 0.15; 
+    const JITTER_AMOUNT = 0.15;
 
     return monthColumns.map((month) => {
       const dataPoint: any = { name: formatKsaDate(month, true) };
@@ -331,12 +376,12 @@ const AnalysisDashboard = () => {
         const totalOverlaps = overlappingKecamatan.length;
 
         if (totalOverlaps > 1) {
-          const startOffset = -JITTER_AMOUNT * (totalOverlaps - 1) / 2;
-          
+          const startOffset = (-JITTER_AMOUNT * (totalOverlaps - 1)) / 2;
+
           overlappingKecamatan.forEach((kecamatanName, index) => {
             const jitter = startOffset + index * JITTER_AMOUNT;
-            if(dataPoint[kecamatanName] !== null) {
-                dataPoint[kecamatanName] += jitter;
+            if (dataPoint[kecamatanName] !== null) {
+              dataPoint[kecamatanName] += jitter;
             }
           });
         }
@@ -347,7 +392,8 @@ const AnalysisDashboard = () => {
   }, [aggregatedData, aggregatedColumns, confirmedSelectedKecamatan]);
 
   const predictedChartData = useMemo(() => {
-    if (!predictedData || confirmedSelectedKecamatanPrediksi.length === 0) return [];
+    if (!predictedData || confirmedSelectedKecamatanPrediksi.length === 0)
+      return [];
 
     const monthColumns = predictionColumns.filter((c) => c !== "kecamatan");
     const JITTER_AMOUNT = 0.15;
@@ -376,12 +422,12 @@ const AnalysisDashboard = () => {
         const totalOverlaps = overlappingKecamatan.length;
 
         if (totalOverlaps > 1) {
-          const startOffset = -JITTER_AMOUNT * (totalOverlaps - 1) / 2;
-          
+          const startOffset = (-JITTER_AMOUNT * (totalOverlaps - 1)) / 2;
+
           overlappingKecamatan.forEach((kecamatanName, index) => {
             const jitter = startOffset + index * JITTER_AMOUNT;
-             if(dataPoint[kecamatanName] !== null) {
-                dataPoint[kecamatanName] += jitter;
+            if (dataPoint[kecamatanName] !== null) {
+              dataPoint[kecamatanName] += jitter;
             }
           });
         }
@@ -392,7 +438,9 @@ const AnalysisDashboard = () => {
   }, [predictedData, predictionColumns, confirmedSelectedKecamatanPrediksi]);
 
   const availableMonthsForMap = useMemo(() => {
-    const allMonths = combinedTableData.columns.filter((c) => c !== "kecamatan");
+    const allMonths = combinedTableData.columns.filter(
+      (c) => c !== "kecamatan"
+    );
     return allMonths;
   }, [combinedTableData.columns]);
 
@@ -447,8 +495,16 @@ const AnalysisDashboard = () => {
   };
 
   const lineColors = [
-    "#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE",
-    "#00C49F", "#FFBB28", "#FF8042", "#A4DE6C", "#D0ED57",
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+    "#ff8042",
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#A4DE6C",
+    "#D0ED57",
   ];
 
   return (
@@ -462,9 +518,9 @@ const AnalysisDashboard = () => {
         </h2>
         <div className="w-24 h-1 bg-green-700 mx-auto" />
         <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-          Jelajahi data KSA terbaru dan prediksi untuk 12 bulan ke depan.
-          Anda dapat menggunakan filter untuk melihat tren per kecamatan, atau lihat sebaran
-          fase tanam pada peta geo-spasial interaktif.
+          Jelajahi data KSA terbaru dan prediksi untuk 12 bulan ke depan. Anda
+          dapat menggunakan filter untuk melihat tren per kecamatan, atau lihat
+          sebaran fase tanam pada peta geo-spasial interaktif.
         </p>
       </div>
 
@@ -498,9 +554,9 @@ const AnalysisDashboard = () => {
               <CardDescription>
                 Grafik ini menggambarkan tren historis fase tanam padi yang
                 paling dominan per kecamatan di Kota Tasikmalaya. Dengan
-                memvisualisasikan tren padi bulanan, Anda dapat mengamati
-                siklus tanam dan pola perubahan fase pertumbuhan padi dari waktu
-                ke waktu secara dinamis.
+                memvisualisasikan tren padi bulanan, Anda dapat mengamati siklus
+                tanam dan pola perubahan fase pertumbuhan padi dari waktu ke
+                waktu secara dinamis.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -583,7 +639,9 @@ const AnalysisDashboard = () => {
                       fontSize={12}
                       domain={yAxisDomain as [number, number]}
                       ticks={yAxisTicksNumeric}
-                      tickFormatter={(value) => yValueToLabel[String(Math.round(value))] || ""}
+                      tickFormatter={(value) =>
+                        yValueToLabel[String(Math.round(value))] || ""
+                      }
                       interval={0}
                       width={100}
                     />
@@ -615,17 +673,18 @@ const AnalysisDashboard = () => {
               </CardTitle>
               <CardDescription>
                 Grafik ini menyajikan proyeksi fase pertumbuhan padi untuk 12
-                bulan ke depan, berdasarkan pola historis dari data KSA terakhir.
-                Dengan algoritma support vector machine (SVM), kami memprediksi transisi fase
-                tanam, memungkinkan Anda untuk mengantisipasi siklus pertanian
-                mendatang per kecamatan di Kota Tasikmalaya.
+                bulan ke depan, berdasarkan pola historis dari data KSA
+                terakhir. Dengan algoritma support vector machine (SVM), kami
+                memprediksi transisi fase tanam, memungkinkan Anda untuk
+                mengantisipasi siklus pertanian mendatang per kecamatan di Kota
+                Tasikmalaya.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 mb-4 flex items-center">
                 <Info size={16} className="mr-2 text-blue-500" />
-                Silahkan anda dapat memilih kecamatan yang ingin Anda
-                lihat prediksinya.
+                Silahkan anda dapat memilih kecamatan yang ingin Anda lihat
+                prediksinya.
               </p>
               <div className="mb-4">
                 <Label htmlFor="kecamatan-select-prediksi">
@@ -708,7 +767,9 @@ const AnalysisDashboard = () => {
                       fontSize={12}
                       domain={yAxisDomain as [number, number]}
                       ticks={yAxisTicksNumeric}
-                      tickFormatter={(value) => yValueToLabel[String(Math.round(value))] || ""}
+                      tickFormatter={(value) =>
+                        yValueToLabel[String(Math.round(value))] || ""
+                      }
                       interval={0}
                       width={100}
                     />
@@ -732,106 +793,108 @@ const AnalysisDashboard = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
-              <CardHeader>
-                  <CardTitle className="flex items-center">
-                      <MapPin className="w-5 h-5 mr-2" />
-                      Peta Sebaran Fase Tanam per Sawah/Kecamatan
-                  </CardTitle>
-                  <CardDescription>
-                      Peta interaktif ini memvisualisasikan fase tanam padi yang dominan pada
-                      petak-petak sawah individual di setiap kecamatan untuk bulan yang dipilih,
-                      memberikan detail distribusi fase tanam.
-                  </CardDescription>
-              </CardHeader>
-              <CardContent>
-                  <p className="text-sm text-gray-600 mb-4 flex items-center">
-                      <Info size={16} className="mr-2 text-blue-500" />
-                      Pilih bulan yang diinginkan lalu klik "Terapkan" untuk
-                      memperbarui warna pada peta sesuai fase tanam.
-                  </p>
-                  <div className="flex items-center gap-2 mb-4">
-                      <div className="flex-grow">
-                          <Label htmlFor="month-select-map">Pilih Bulan</Label>
-                          <Select
-                              value={pendingMapMonth}
-                              onValueChange={setPendingMapMonth}
-                          >
-                              <SelectTrigger id="month-select-map">
-                                  <SelectValue placeholder="Pilih bulan..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  {availableMonthsForMap.map((month) => (
-                                      <SelectItem key={month} value={month}>
-                                          {formatKsaDate(month)}
-                                      </SelectItem>
-                                  ))}
-                              </SelectContent>
-                          </Select>
-                      </div>
-                      <Button onClick={handleConfirmMapMonth} className="self-end">
-                          Terapkan
-                      </Button>
-                  </div>
-                  <KecamatanMapDynamic
-                      geoJsonKecamatan={tasikmalayaGeoJson}
-                      geoJsonSawah={sawahGeoJson}
-                      dataFase={combinedTableData.data}
-                      selectedMonth={confirmedMapMonth}
-                      phaseColorMapping={getPhaseColor}
-                  />
-              </CardContent>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <MapPin className="w-5 h-5 mr-2" />
+                Peta Sebaran Fase Tanam per Sawah/Kecamatan
+              </CardTitle>
+              <CardDescription>
+                Peta interaktif ini memvisualisasikan fase tanam padi yang
+                dominan pada petak-petak sawah individual di setiap kecamatan
+                untuk bulan yang dipilih, memberikan detail distribusi fase
+                tanam.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4 flex items-center">
+                <Info size={16} className="mr-2 text-blue-500" />
+                Pilih bulan yang diinginkan lalu klik "Terapkan" untuk
+                memperbarui warna pada peta sesuai fase tanam.
+              </p>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex-grow">
+                  <Label htmlFor="month-select-map">Pilih Bulan</Label>
+                  <Select
+                    value={pendingMapMonth}
+                    onValueChange={setPendingMapMonth}
+                  >
+                    <SelectTrigger id="month-select-map">
+                      <SelectValue placeholder="Pilih bulan..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableMonthsForMap.map((month) => (
+                        <SelectItem key={month} value={month}>
+                          {formatKsaDate(month)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleConfirmMapMonth} className="self-end">
+                  Terapkan
+                </Button>
+              </div>
+              <KecamatanMapDynamic
+                geoJsonKecamatan={tasikmalayaGeoJson}
+                geoJsonSawah={sawahGeoJson}
+                dataFase={combinedTableData.data}
+                selectedMonth={confirmedMapMonth}
+                phaseColorMapping={getPhaseColor}
+              />
+            </CardContent>
           </Card>
-      
+
           <Card>
-              <CardHeader>
-                  <CardTitle className="flex items-center">
-                      <Globe className="w-5 h-5 mr-2" />
-                      Peta Fase Tanam Dominan Kota Tasikmalaya
-                  </CardTitle>
-                  <CardDescription>
-                      Peta ini menampilkan fase tanam dominan untuk seluruh wilayah Kota Tasikmalaya
-                      berdasarkan bulan yang dipilih. Seluruh area kota akan diwarnai sesuai dengan
-                      fase tanam yang paling sering muncul di semua kecamatan pada bulan tersebut.
-                  </CardDescription>
-              </CardHeader>
-              <CardContent>
-                  <p className="text-sm text-gray-600 mb-4 flex items-center">
-                      <Info size={16} className="mr-2 text-blue-500" />
-                      Pilih bulan yang diinginkan, kemudian klik "Terapkan" untuk melihat fase dominan
-                      seluruh kota pada peta.
-                  </p>
-                  <div className="flex items-center gap-2 mb-4">
-                      <div className="flex-grow">
-                          <Label htmlFor="month-select-city-map">Pilih Bulan</Label>
-                          <Select
-                              value={pendingMapMonth}
-                              onValueChange={setPendingMapMonth}
-                          >
-                              <SelectTrigger id="month-select-city-map">
-                                  <SelectValue placeholder="Pilih bulan..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  {availableMonthsForMap.map((month) => (
-                                      <SelectItem key={month} value={month}>
-                                          {formatKsaDate(month)}
-                                      </SelectItem>
-                                  ))}
-                              </SelectContent>
-                          </Select>
-                      </div>
-                      <Button onClick={handleConfirmMapMonth} className="self-end">
-                          Terapkan
-                      </Button>
-                  </div>
-                  <TasikCityMap
-                      geoJsonKecamatan={tasikmalayaGeoJson}
-                      dataFaseKota={cityWideDominantPhase}
-                      phaseColorMapping={getPhaseColor}
-                      selectedMonth={confirmedMapMonth}
-                  />
-              </CardContent>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Globe className="w-5 h-5 mr-2" />
+                Peta Fase Tanam Dominan Kota Tasikmalaya
+              </CardTitle>
+              <CardDescription>
+                Peta ini menampilkan fase tanam dominan untuk seluruh wilayah
+                Kota Tasikmalaya berdasarkan bulan yang dipilih. Seluruh area
+                kota akan diwarnai sesuai dengan fase tanam yang paling sering
+                muncul di semua kecamatan pada bulan tersebut.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-4 flex items-center">
+                <Info size={16} className="mr-2 text-blue-500" />
+                Pilih bulan yang diinginkan, kemudian klik "Terapkan" untuk
+                melihat fase dominan seluruh kota pada peta.
+              </p>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex-grow">
+                  <Label htmlFor="month-select-city-map">Pilih Bulan</Label>
+                  <Select
+                    value={pendingMapMonth}
+                    onValueChange={setPendingMapMonth}
+                  >
+                    <SelectTrigger id="month-select-city-map">
+                      <SelectValue placeholder="Pilih bulan..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableMonthsForMap.map((month) => (
+                        <SelectItem key={month} value={month}>
+                          {formatKsaDate(month)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleConfirmMapMonth} className="self-end">
+                  Terapkan
+                </Button>
+              </div>
+              <TasikCityMap
+                geoJsonKecamatan={tasikmalayaGeoJson}
+                dataFaseKota={cityWideDominantPhase}
+                phaseColorMapping={getPhaseColor}
+                selectedMonth={confirmedMapMonth}
+              />
+            </CardContent>
           </Card>
         </>
       )}
