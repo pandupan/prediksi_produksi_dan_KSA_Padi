@@ -56,7 +56,7 @@ const Benefits = () => {
           <motion.div className="lg:w-2/5 w-full" variants={itemVariants}>
             <div className="relative h-96 lg:h-[500px] w-full rounded-lg shadow-2xl overflow-hidden">
               <Image
-                src="https://freeimghost.net/images/2025/07/23/Screenshot-2025-07-23-110459.png"
+                src="https://i.ibb.co.com/dw6vsjrY/1ae134bd-8b49-4e53-8871-c8750746a61d-2.png"
                 alt="Kegunaan KSA"
                 layout="fill"
                 objectFit="cover"

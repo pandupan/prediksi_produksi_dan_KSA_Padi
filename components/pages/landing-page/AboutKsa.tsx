@@ -56,7 +56,7 @@ const AboutKsa = () => {
           >
             <div className="relative w-full h-80 shadow-xl rounded-lg overflow-hidden">
               <Image
-                src="https://freeimghost.net/images/2025/07/23/KEGUNAAN-KSA.png" 
+                src="https://i.ibb.co.com/bjRGN41Z/fc9cad81-5030-4085-be77-6ec631d09a25-1.png" 
                 alt="Pemandangan sawah untuk deskripsi KSA"
                 layout="fill"
                 objectFit="cover"

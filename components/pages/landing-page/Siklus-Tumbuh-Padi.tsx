@@ -17,42 +17,42 @@ const growthCycleData = [
     {
       title: "Vegetatif 1",
       description: "Fase sejak tanaman padi ditanam sampai anak maksimum. Dengan ciri jarak antar tanaman terlihat dan daun belum rimbun.",
-      imageUrl: "https://freeimghost.net/images/2025/07/29/veg-1.png",
+      imageUrl: "https://i.ibb.co.com/YFnGV6Kn/veg-1.png",
     },
     {
       title: "Vegetatif 2",
       description: "Fase tumbuh dari anakan maksimum sampai sebelum keluar malai. Dengan ciri jarak antar tanaman sudah tidak terlihat jelas dan daun rimbun.",
-      imageUrl: "https://freeimghost.net/images/2025/07/29/542f4b4a-e4e8-4864-b7ff-ce6b12ae88ff.png",
+      imageUrl: "https://i.ibb.co.com/cq19qDf/542f4b4a-e4e8-4864-b7ff-ce6b12ae88ff.png",
     },
     {
       title: "Generatif 1",
       description: "Fase tumbuh saat padi mulai dari keluar malai (bulir padi). Dengan ciri muncul malai/bulir padi yang masih muda.",
-      imageUrl: "https://freeimghost.net/images/2025/07/29/gen-1.png",
+      imageUrl: "https://i.ibb.co.com/20gcmw6D/gen-1.png",
     },
     {
       title: "Generatif 2",
       description: "Fase padi mengalami pematangan setelah keluar malai. Dengan ciri bulir dan daun padi mulai berubah warna menjadi menguning.",
-      imageUrl: "https://freeimghost.net/images/2025/07/29/gen-2.png",
+      imageUrl: "https://i.ibb.co.com/7t0jwvCs/gen-2.png",
     },
     {
       title: "Generatif 3",
       description: "Fase padi sudah mengalami pematangan sempurna sampai sebelum panen. Dengan ciri warna bulir padi sudah menguning semua.",
-      imageUrl: "https://freeimghost.net/images/2025/07/29/Screenshot-2025-07-28-103836.png",
+      imageUrl: "https://i.ibb.co.com/FkqRvr93/gen-3-1.png",
     },
     {
       title: "Panen",
       description: "Fase pada saat padi sedang dalam proses pemanenan atau telah dipanen. Dengan ciri jika padi sudah dipanen hanya terlihat sisa batang padi.",
-      imageUrl: "https://freeimghost.net/images/2025/07/29/istockphoto-1474579294-170667a-2.jpg",
+      imageUrl: "https://i.ibb.co.com/xSfrV8BJ/panen.png",
     },
     {
       title: "Bera",
       description: "Periode di mana lahan sawah dibiarkan tidak ditanami padi atau tanaman budidaya lainnya.",
-      imageUrl: "https://freeimghost.net/images/2025/07/29/d09185a5-862d-46df-a645-ad95596f0aaa.png",
+      imageUrl: "https://i.ibb.co.com/qMZk2tgR/bera.png",
     },
     {
       title: "Persiapan Lahan",
       description: "Fase pada saat lahan sedang atau sudah diolah baik yang akan ditanami padi maupun tidak ditanami padi.",
-      imageUrl: "https://freeimghost.net/images/2025/07/29/4b2194ed-116a-472e-bc25-351a09f4279a.png",
+      imageUrl: "https://i.ibb.co.com/FkrQjQXB/per-lahan.png",
     },
 ];
 

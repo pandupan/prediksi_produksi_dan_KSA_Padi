@@ -792,21 +792,21 @@ const InputFile = () => {
                   label="Langkah 1: Kolom 'id segmen' dan 'subsegmen'"
                   description="Kolom 2 berisi 'subsegmen' untuk kode setiap wilayah kecamatan di kota Tasikmalaya. Penulisan kode id_segmen menggunakan kode provinsi (32) diikuti kode kota (78) dan kode kecamatan (010).
 Contoh : 327801004"
-                  imageUrl="https://freeimghost.net/images/2025/07/30/Group-861.png"
+                  imageUrl="https://i.ibb.co.com/ZpqYjxGJ/step-1.png"
                 />
                 <AccordionStep
                   value="item-2"
                   label="Langkah 2: Kolom Data Bulanan (Contoh: 124, 224)"
                   description="Kolom 2 berisi 'subsegmen' untuk menunjukkan penempatan kotak didalam segmen.
 Contoh : Kode A2 menunjukkan titik kotak koordinat mana yang sedang diamati."
-                  imageUrl="https://freeimghost.net/images/2025/07/30/Group-860.png"
+                  imageUrl="https://i.ibb.co.com/Y4WphcVt/Screenshot-2025-09-21-163015.png"
                 />
                 <AccordionStep
                   value="item-3"
                   label="Langkah 3: Pengisian Data Fase Tanam"
                   description="Kolom 3 berisi kode bulan dan tahun untuk menandakan hasil amatan dari setiap bulan dan tahun yang dilakukan.
 Contoh : 124 menunjukkan bulan Januari dan 2024 "
-                  imageUrl="https://freeimghost.net/images/2025/07/30/Group-859.png"
+                  imageUrl="https://i.ibb.co.com/Q3SPJwtf/Screenshot-2025-09-21-163203.png"
                 />
               </Accordion>
             </CardContent>
