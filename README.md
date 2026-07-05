@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌾 Prediksi Produksi dan KSA Padi — Tasikmalaya
 
-## Getting Started
+Platform interaktif untuk **visualisasi data** dan **prediksi produksi padi** serta analisis **Ketahanan Sosial Area (KSA)** di Kabupaten Tasikmalaya. Dibangun menggunakan Next.js dengan peta interaktif Leaflet.
 
-First, run the development server:
+## ✨ Fitur
+
+- **Dashboard Prediksi** — Prediksi produksi padi berdasarkan data historis
+- **Visualisasi KSA** — Analisis ketahanan sosial area dengan grafik interaktif
+- **Peta Interaktif** — Visualisasi spasial kecamatan di Tasikmalaya menggunakan Leaflet
+- **Perbandingan Data** — Fitur perbandingan antar periode/lokasi
+- **Informasi Algoritma** — Penjelasan metode yang digunakan dalam prediksi
+
+## 🛠️ Tech Stack
+
+- **Next.js** — React framework (App Router)
+- **TypeScript** — Type safety
+- **Tailwind CSS** — Styling
+- **shadcn/ui** — UI components
+- **Leaflet / react-leaflet** — Peta interaktif
+- **Framer Motion** — Animasi
+- **Recharts / Chart** — Visualisasi grafik
+- **Turf.js** — Analisis geospasial
+
+## 🚀 Cara Menjalankan
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka [http://localhost:3000](http://localhost:3000) di browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Struktur Proyek
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+├── app/                     # Next.js App Router pages
+│   ├── compare/             # Halaman perbandingan
+│   ├── prediction/          # Halaman prediksi produksi
+│   └── visualisasi-ksa/     # Halaman visualisasi KSA
+├── components/
+│   ├── layout/              # Header & Footer
+│   ├── pages/               # Komponen halaman
+│   │   ├── landing-page/    # Hero, About, Benefits, Algoritma
+│   │   ├── prediction-page/ # Form input file
+│   │   └── visual-page/     # Dashboard analisis
+│   └── ui/                  # Komponen UI (shadcn)
+├── data/                    # Dataset JSON
+│   ├── data_harga_beras.json
+│   ├── data_luas_panen.json
+│   └── dataset_ksa_2024-2025.json
+└── lib/                     # Utility & GeoJSON
+```
 
-## Learn More
+## 📊 Dataset
 
-To learn more about Next.js, take a look at the following resources:
+Proyek ini menggunakan data produksi padi dan KSA dari Kabupaten Tasikmalaya yang disimpan dalam format JSON di folder `data/`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📄 Lisensi
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+MIT License
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> Dibuat oleh [Pandu Pangestu](https://github.com/pandupan) — Proyek internship BPS Tasikmalaya
