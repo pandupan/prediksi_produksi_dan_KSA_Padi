@@ -1,64 +1,98 @@
-# 🌾 Prediksi Produksi dan KSA Padi — Tasikmalaya
+# Prediksi Produksi & KSA Padi 🌾
 
-Platform interaktif untuk **visualisasi data** dan **prediksi produksi padi** serta analisis **Ketahanan Sosial Area (KSA)** di Kabupaten Tasikmalaya. Dibangun menggunakan Next.js dengan peta interaktif Leaflet.
+> **Aplikasi prediksi hasil panen padi dan analisis KSA (Kerangka Sampel Area) untuk Kabupaten Tasikmalaya**
 
-## ✨ Fitur
+Proyek ini adalah aplikasi berbasis Next.js yang menyajikan data dan visualisasi **Kerangka Sampel Area (KSA)** untuk memprediksi hasil produksi padi di Kabupaten Tasikmalaya. Menggabungkan data statistik pertanian dengan analisis spasial interaktif menggunakan peta Leaflet.
 
-- **Dashboard Prediksi** — Prediksi produksi padi berdasarkan data historis
-- **Visualisasi KSA** — Analisis ketahanan sosial area dengan grafik interaktif
-- **Peta Interaktif** — Visualisasi spasial kecamatan di Tasikmalaya menggunakan Leaflet
-- **Perbandingan Data** — Fitur perbandingan antar periode/lokasi
-- **Informasi Algoritma** — Penjelasan metode yang digunakan dalam prediksi
+---
+
+## ✨ Fitur Utama
+
+- **Prediksi Produksi Padi** — Estimasi hasil panen berdasarkan data historis
+- **Visualisasi KSA Interaktif** — Peta sebaran titik KSA di Tasikmalaya dengan Leaflet
+- **Perbandingan Data** — Analisis komparatif data produksi antar wilayah/kecamatan
+- **Metode KSA** — Informasi tentang metodologi Kerangka Sampel Area
+- **Siklus Tumbuh Padi** — Edukasi fase pertumbuhan padi
+- **Data Real-time** — Dataset JSON harga beras, luas panen, dan data KSA 2024-2025
+- **Animasi Halus** — Transisi dan animasi dengan Framer Motion
+- **Peta Interaktif** — GeoJSON Kecamatan Tasikmalaya dengan informasi detail
 
 ## 🛠️ Tech Stack
 
-- **Next.js** — React framework (App Router)
-- **TypeScript** — Type safety
-- **Tailwind CSS** — Styling
-- **shadcn/ui** — UI components
-- **Leaflet / react-leaflet** — Peta interaktif
-- **Framer Motion** — Animasi
-- **Recharts / Chart** — Visualisasi grafik
-- **Turf.js** — Analisis geospasial
+- **Framework:** Next.js 15 (App Router)
+- **Bahasa:** TypeScript
+- **UI:** Tailwind CSS 4, Radix UI, Headless UI
+- **Animasi:** Framer Motion
+- **Peta:** Leaflet + React-Leaflet + Turf.js
+- **Grafik:** Recharts
+- **Data:** XLSX (pengolahan file Excel)
+- **Statistik:** regression (analisis regresi)
 
-## 🚀 Cara Menjalankan
+---
 
+## 🚀 Cara Install & Jalankan
+
+### Prasyarat
+- Node.js 18+
+- npm atau yarn
+
+### Langkah
 ```bash
+# Clone repositori
+git clone https://github.com/pandupan/prediksi_produksi_dan_KSA_Padi.git
+cd prediksi_produksi_dan_KSA_Padi
+
+# Install dependencies
 npm install
+
+# Jalankan development server
 npm run dev
 ```
 
 Buka [http://localhost:3000](http://localhost:3000) di browser.
 
-## 📁 Struktur Proyek
+---
+
+## 📁 Struktur Folder
 
 ```
-├── app/                     # Next.js App Router pages
-│   ├── compare/             # Halaman perbandingan
-│   ├── prediction/          # Halaman prediksi produksi
-│   └── visualisasi-ksa/     # Halaman visualisasi KSA
+prediksi_produksi_dan_KSA_Padi/
+├── app/
+│   ├── page.tsx              # Halaman utama (Hero, About KSA, Metode)
+│   ├── prediction/
+│   │   └── page.tsx          # Halaman prediksi produksi
+│   ├── visualisasi-ksa/
+│   │   └── page.tsx          # Visualisasi peta KSA
+│   └── compare/
+│       └── page.tsx          # Perbandingan data
 ├── components/
-│   ├── layout/              # Header & Footer
-│   ├── pages/               # Komponen halaman
-│   │   ├── landing-page/    # Hero, About, Benefits, Algoritma
-│   │   ├── prediction-page/ # Form input file
-│   │   └── visual-page/     # Dashboard analisis
-│   └── ui/                  # Komponen UI (shadcn)
-├── data/                    # Dataset JSON
-│   ├── data_harga_beras.json
-│   ├── data_luas_panen.json
-│   └── dataset_ksa_2024-2025.json
-└── lib/                     # Utility & GeoJSON
+│   ├── layout/
+│   │   ├── Header.tsx        # Navigasi
+│   │   └── Footer.tsx
+│   ├── pages/
+│   │   ├── landing-page/     # Komponen halaman utama
+│   │   ├── prediction-page/  # Komponen prediksi
+│   │   ├── compare-page/     # Komponen perbandingan
+│   │   └── visual-page/      # Komponen visualisasi
+│   ├── KecamatanMap.tsx      # Peta kecamatan
+│   ├── TasikCityMap.tsx      # Peta kota Tasikmalaya
+│   └── ui/                   # Komponen UI (shadcn)
+├── data/
+│   ├── data_harga_beras.json      # Data harga beras
+│   ├── data_luas_panen.json       # Data luas panen
+│   └── dataset_ksa_2024-2025.json # Dataset KSA
+├── lib/
+│   ├── bpn-sawah-geojson.ts
+│   ├── tasikmalaya-geojson.ts
+│   └── utils.tsx
+├── public/
+└── package.json
 ```
-
-## 📊 Dataset
-
-Proyek ini menggunakan data produksi padi dan KSA dari Kabupaten Tasikmalaya yang disimpan dalam format JSON di folder `data/`.
 
 ## 📄 Lisensi
 
-MIT License
+**MIT License**
 
 ---
 
-> Dibuat oleh [Pandu Pangestu](https://github.com/pandupan) — Proyek internship BPS Tasikmalaya
+> Dibuat oleh [Pandu Pangestu](https://github.com/pandupan) — Data dan analisis untuk mendukung sektor pertanian di Kabupaten Tasikmalaya.
